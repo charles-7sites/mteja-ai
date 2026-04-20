@@ -25,7 +25,7 @@ const {
 // ── GEMINI SETUP ──────────────────────────────────────────────
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash", // Free + fast
+  model: "gemini-1.5-flash-latest", // Free + fast
   systemInstruction: `You are MTEJA AI, a WhatsApp business assistant for small businesses in Kisumu, Kenya.
 Help owners log customer sales, track follow-ups, and grow their business.
 
