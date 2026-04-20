@@ -24,9 +24,16 @@ const {
 
 // ── GEMINI SETUP ──────────────────────────────────────────────
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash", // Free + fast
-  systemInstruction: `You are MTEJA AI, a WhatsApp business assistant for small businesses in Kisumu, Kenya.
+
+// Fallback chain — tries each model in order if previous is overloaded
+const MODELS = [
+  "gemini-2.5-flash",       // Best free model — fast + smart
+  "gemini-2.5-flash-lite",  // Cheapest + fastest fallback
+  "gemini-2.0-flash",       // Older but reliable free fallback
+  "gemini-2.0-flash-lite",  // Last resort — always available
+];
+
+const SYSTEM_INSTRUCTION = `You are MTEJA AI, a WhatsApp business assistant for small businesses in Kisumu, Kenya.
 Help owners log customer sales, track follow-ups, and grow their business.
 
 RULES:
@@ -46,8 +53,7 @@ COMMANDS YOU HANDLE:
 
 For registration: collect business name, type, owner name → assign code MTEJA-XXX
 For logging sale: collect customer name, item bought, amount in Ksh → award 1 point per Ksh 100
-For follow-ups: list customers overdue (18-25 days) with suggested message to send`,
-});
+For follow-ups: list customers overdue (18-25 days) with suggested message to send`;
 
 // ── SUPABASE SETUP ────────────────────────────────────────────
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -91,31 +97,72 @@ async function sendWhatsApp(to, text) {
   }
 }
 
-// ── CALL GEMINI API ───────────────────────────────────────────
+// ── CALL GEMINI WITH RETRY + FALLBACK ────────────────────────
 async function askGemini(phone, userMessage) {
   const history = getHistory(phone);
+  let lastError = null;
 
-  // Start or continue chat session with history
-  const chat = model.startChat({
-    history: history,
-    generationConfig: {
-      maxOutputTokens: 300, // Keep replies short for WhatsApp
-      temperature: 0.7,
-    },
-  });
+  // Try each model in order until one works
+  for (const modelName of MODELS) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        console.log(`🤖 Trying model: ${modelName} (attempt ${attempt})`);
 
-  const result = await chat.sendMessage(userMessage);
-  const reply = result.response.text();
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          systemInstruction: SYSTEM_INSTRUCTION,
+        });
 
-  // Save updated history
-  const newHistory = [
-    ...history,
-    { role: "user", parts: [{ text: userMessage }] },
-    { role: "model", parts: [{ text: reply }] },
-  ];
-  saveHistory(phone, newHistory);
+        const chat = model.startChat({
+          history,
+          generationConfig: {
+            maxOutputTokens: 300,
+            temperature: 0.7,
+          },
+        });
 
-  return reply;
+        const result = await chat.sendMessage(userMessage);
+        const reply = result.response.text();
+
+        // Save updated history on success
+        saveHistory(phone, [
+          ...history,
+          { role: "user", parts: [{ text: userMessage }] },
+          { role: "model", parts: [{ text: reply }] },
+        ]);
+
+        console.log(`✅ Success with model: ${modelName}`);
+        return reply;
+
+      } catch (err) {
+        lastError = err;
+        const is503 = err.message?.includes("503") || err.message?.includes("unavailable") || err.message?.includes("high demand");
+        const is404 = err.message?.includes("404") || err.message?.includes("not found");
+
+        if (is404) {
+          // Model doesn't exist — skip to next model immediately
+          console.log(`⏭️ Model ${modelName} not found, trying next...`);
+          break;
+        }
+
+        if (is503 && attempt < 3) {
+          // Server overloaded — wait and retry same model
+          const wait = attempt * 2000; // 2s, 4s
+          console.log(`⏳ Model ${modelName} overloaded, retrying in ${wait/1000}s...`);
+          await new Promise(r => setTimeout(r, wait));
+          continue;
+        }
+
+        // Other error — try next model
+        console.log(`❌ Model ${modelName} failed: ${err.message}`);
+        break;
+      }
+    }
+  }
+
+  // All models failed — send friendly error to user
+  console.error("❌ All Gemini models failed:", lastError?.message);
+  return "Samahani, kuna msongo mkubwa saa hii 😅 Tafadhali jaribu tena baada ya dakika moja!\n\n— MTEJA AI 🤖";
 }
 
 // ── LOG TRANSACTION TO SUPABASE ───────────────────────────────
