@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: mteja-ai
+    runtime: node
+    buildCommand: npm install
+    startCommand: node mteja-backend-gemini.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20.0.0
