@@ -182,6 +182,55 @@ async function askGemini(phone, userMessage) {
   return "Samahani, kuna msongo mkubwa saa hii 😅 Tafadhali jaribu tena baada ya dakika moja!\n\n— MTEJA AI 🤖";
 }
 
+
+// ── SAVE BUSINESS REGISTRATION TO SUPABASE ───────────────────
+async function saveBusinessIfNew(phone, reply, history) {
+  if (!reply.includes("MTEJA-")) return;
+  const codeMatch = reply.match(/MTEJA-[A-Z0-9]+/);
+  if (!codeMatch) return;
+  const code = codeMatch[0];
+  const { data: existing } = await supabase
+    .from("businesses").select("id").eq("phone", phone).single();
+  if (existing) return;
+  const fullConvo = history.map(h => h.parts?.[0]?.text || "").join(" ");
+  const nameMatch = fullConvo.match(/Business name[:\s]+([A-Za-z\s&]+)/i) ||
+                    fullConvo.match(/jina.*?[:\s]+([A-Za-z\s&]+)/i);
+  const typeMatch = fullConvo.match(/salon|pharmacy|hardware|restaurant|boutique|referral|agency|duka|shop/i);
+  const ownerMatch = fullConvo.match(/owner[:\s]+([A-Za-z\s]+)/i);
+  const name = nameMatch?.[1]?.trim() || "Business";
+  const type = typeMatch?.[0]?.toLowerCase() || "other";
+  const owner_name = ownerMatch?.[1]?.trim() || "";
+  await supabase.from("businesses").insert({
+    phone, name, type, owner_name, code, plan: "basic",
+    created_at: new Date().toISOString(),
+  });
+  console.log(`✅ Business saved: ${name} → ${code}`);
+}
+
+// ── SAVE TRANSACTION WHEN BOT CONFIRMS SALE ──────────────────
+async function saveTransactionIfLogged(phone, reply, history) {
+  const isConfirmation =
+    reply.toLowerCase().includes("asante") ||
+    reply.toLowerCase().includes("logged") ||
+    reply.toLowerCase().includes("imehifadhiwa") ||
+    reply.toLowerCase().includes("recorded") ||
+    reply.toLowerCase().includes("imeandikwa");
+  if (!isConfirmation) return;
+  const amountMatch = reply.match(/Ksh\s*([\d,]+)/i);
+  if (!amountMatch) return;
+  const amount = parseInt(amountMatch[1].replace(/,/g, ""));
+  if (!amount || amount < 10) return;
+  const recentConvo = history.slice(-8).map(h => h.parts?.[0]?.text || "").join(" ");
+  const nameMatch = recentConvo.match(/(?:^|\s)([A-Z][a-z]+ [A-Z][a-z]+)/m);
+  const customer_name = nameMatch?.[1]?.trim() || "Customer";
+  const phoneMatch = recentConvo.match(/0[17]\d{8}/);
+  const customer_phone = phoneMatch?.[0] || null;
+  const itemMatch = recentConvo.match(/(?:bought|alinunua|item)[:\s]+([A-Za-z\s]+)/i);
+  const item = itemMatch?.[1]?.trim() || "Sale";
+  await logTransaction({ business_phone: phone, customer_name, customer_phone, item, amount });
+  console.log(`✅ Transaction saved: ${customer_name} Ksh ${amount}`);
+}
+
 // ── LOG TRANSACTION TO SUPABASE ───────────────────────────────
 async function logTransaction({ business_phone, customer_name, customer_phone, item, amount }) {
   const points = Math.floor(amount / 100);
@@ -335,6 +384,11 @@ app.post("/webhook", async (req, res) => {
     // ── ALL OTHER MESSAGES → GEMINI AI ───────────────────────
     const reply = await askGemini(from, text);
     await sendWhatsApp(from, reply);
+
+    // Auto-save to Supabase based on bot reply
+    const currentHistory = conversations.get(from) || [];
+    await saveBusinessIfNew(from, reply, currentHistory);
+    await saveTransactionIfLogged(from, reply, currentHistory);
 
   } catch (err) {
     console.error("❌ Webhook error:", err.message);
