@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MTEJA AI - Connection Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: system-ui; background: #064E3B; color: #fff; padding: 20px; }
+    .card { background: #fff; color: #0F172A; border-radius: 16px; padding: 24px; max-width: 400px; margin: 40px auto; }
+    h2 { color: #064E3B; margin-bottom: 20px; }
+    .step { padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; }
+    .pending { background: #FEF3C7; color: #92400E; }
+    .ok { background: #D1FAE5; color: #065F46; }
+    .fail { background: #FEE2E2; color: #991B1B; }
+    pre { background: #F1F5F9; padding: 10px; border-radius: 8px; font-size: 11px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+    button { background: #064E3B; color: #fff; border: none; padding: 14px; border-radius: 10px; width: 100%; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h2>🔍 MTEJA AI — Connection Diagnostics</h2>
+
+  <div id="s1" class="step pending">⏳ Step 1: Connecting to Supabase...</div>
+  <div id="s2" class="step pending">⏳ Step 2: Reading businesses table...</div>
+  <div id="s3" class="step pending">⏳ Step 3: Finding your record...</div>
+  <div id="s4" class="step pending">⏳ Step 4: Result</div>
+
+  <div id="details" style="margin-top:16px"></div>
+  <button onclick="runTest()">🔄 Run Test Again</button>
+</div>
+
+<script>
+const SUPABASE_URL = "https://ypwmlgvgssdkicrlkhii.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd21sZ3Znc3Nka2ljcmxraGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzNjg0ODgsImV4cCI6MjA5MTk0NDQ4OH0.8U1rsJ4RsUUiMPLWC2cHx9pcZgmpQXDjqdPGppVudq8";
+const PHONE = "254794810581";
+const CODE = "MTEJA-001";
+
+function setStep(id, status, text) {
+  const el = document.getElementById(id);
+  el.className = "step " + status;
+  el.textContent = (status === "ok" ? "✅ " : status === "fail" ? "❌ " : "⏳ ") + text;
+}
+
+async function runTest() {
+  ["s1","s2","s3","s4"].forEach(id => {
+    document.getElementById(id).className = "step pending";
+    document.getElementById(id).textContent = "⏳ Waiting...";
+  });
+  document.getElementById("details").innerHTML = "";
+
+  try {
+    // Step 1 — Create client
+    setStep("s1", "pending", "Connecting to Supabase...");
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    setStep("s1", "ok", "Supabase client created successfully");
+
+    // Step 2 — Read all businesses (no filter)
+    setStep("s2", "pending", "Reading businesses table...");
+    const { data: allData, error: allError } = await db
+      .from("businesses")
+      .select("phone, code, name")
+      .limit(10);
+
+    if (allError) {
+      setStep("s2", "fail", "Table read failed: " + allError.message);
+      document.getElementById("details").innerHTML =
+        "<pre>Error: " + JSON.stringify(allError, null, 2) + "</pre>";
+      return;
+    }
+
+    setStep("s2", "ok", `Table readable! Found ${allData.length} record(s) total`);
+    document.getElementById("details").innerHTML =
+      "<pre>All records:\n" + JSON.stringify(allData, null, 2) + "</pre>";
+
+    // Step 3 — Find specific record
+    setStep("s3", "pending", `Looking for phone=${PHONE}, code=${CODE}...`);
+    const { data, error } = await db
+      .from("businesses")
+      .select("*")
+      .eq("phone", PHONE)
+      .eq("code", CODE)
+      .single();
+
+    if (error) {
+      setStep("s3", "fail", "Record not found: " + error.message);
+      setStep("s4", "fail", "Login will fail — record missing or wrong details");
+      document.getElementById("details").innerHTML +=
+        "<pre>Search error:\n" + JSON.stringify(error, null, 2) + "</pre>";
+      return;
+    }
+
+    setStep("s3", "ok", "Record found! " + data.name);
+    setStep("s4", "ok", "Dashboard login WILL work! ✅");
+    document.getElementById("details").innerHTML +=
+      "<pre>Your record:\n" + JSON.stringify(data, null, 2) + "</pre>";
+
+  } catch(e) {
+    setStep("s1", "fail", "Connection failed: " + e.message);
+    document.getElementById("details").innerHTML =
+      "<pre>Exception: " + e.message + "</pre>";
+  }
+}
+
+window.onload = runTest;
+</script>
+</body>
+</html>
