@@ -1,9 +1,8 @@
 {
   "name": "mteja-ai",
   "version": "3.0.0",
-  "type": "module",
   "scripts": {
-    "start": "node mteja-backend-gemini.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
