@@ -1,19 +1,16 @@
 {
-  "name": "mteja-ai-bot",
-  "version": "1.0.0",
-  "description": "MTEJA AI - WhatsApp Customer Retention Bot for Kisumu SMEs",
+  "name": "mteja-ai",
+  "version": "3.0.0",
   "type": "module",
-  "main": "mteja-backend-gemini.js",
   "scripts": {
-    "start": "node mteja-backend-gemini.js",
-    "dev": "node --watch mteja-backend-gemini.js"
+    "start": "node mteja-backend-gemini.js"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.17.0",
+    "@google/generative-ai": "^0.21.0",
     "@supabase/supabase-js": "^2.45.0",
     "express": "^4.19.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "18.x"
   }
 }
