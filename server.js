@@ -88,7 +88,102 @@ async function handleSale(phone, text, s) {
   }
 }
 
-app.get("/webhook", (req, res) => {
+// ══════════════════════════════════════════════
+//  MTEJA AI — Dashboard API Routes
+//  Paste these into your server.js BEFORE the
+//  /webhook routes
+// ══════════════════════════════════════════════
+
+// GET /api/stats  — dashboard overview numbers
+app.get("/api/stats", async (req, res) => {
+  try {
+    const [{ count: businesses }, { count: customers }, { count: transactions }, txData] =
+      await Promise.all([
+        supabase.from("businesses").select("*", { count: "exact", head: true }),
+        supabase.from("customers").select("*",  { count: "exact", head: true }),
+        supabase.from("transactions").select("*",{ count: "exact", head: true }),
+        supabase.from("transactions").select("amount")
+      ]);
+
+    const revenue = (txData.data || []).reduce((sum, t) => sum + (t.amount || 0), 0);
+
+    res.json({ businesses, customers, transactions, revenue });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
+// GET /api/businesses  — list all registered businesses
+app.get("/api/businesses", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("businesses")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    res.json(data || []);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
+// POST /api/businesses  — register a new business (from dashboard)
+app.post("/api/businesses", async (req, res) => {
+  try {
+    const { business_name, owner_name, phone, business_type, location } = req.body;
+    if (!business_name || !owner_name || !phone) {
+      return res.status(400).json({ message: "business_name, owner_name and phone are required" });
+    }
+
+    // Generate a unique code e.g. MTEJA-007
+    const { count } = await supabase
+      .from("businesses")
+      .select("*", { count: "exact", head: true });
+
+    const code = "MTEJA-" + String((count || 0) + 1).padStart(3, "0");
+
+    const { data, error } = await supabase
+      .from("businesses")
+      .insert({
+        name: business_name,
+        owner_name,
+        phone,
+        business_type,
+        location,
+        business_code: code
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.status(201).json({ business: data });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
+// DELETE /api/businesses/:id  — remove a business
+app.delete("/api/businesses/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Try matching by phone (your primary key) or id
+    const { error } = await supabase
+      .from("businesses")
+      .delete()
+      .or(`phone.eq.${id},id.eq.${id},business_code.eq.${id}`);
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+ app.get("/webhook", (req, res) => {
   req.query["hub.mode"]==="subscribe" && req.query["hub.verify_token"]===VERIFY_TOKEN
     ? res.send(req.query["hub.challenge"]) : res.sendStatus(403);
 });
