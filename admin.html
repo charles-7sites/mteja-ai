@@ -1,39 +1,652 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>MTEJA AI — Admin</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:#0a0f1e;min-height:100vh;color:#e2e8f0}
+import { useState, useEffect, useCallback } from "react";
 
-/* ── LOGIN ── */
-#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
-  background:radial-gradient(ellipse at 20% 50%,rgba(14,165,233,0.08) 0%,transparent 60%),
-             radial-gradient(ellipse at 80% 20%,rgba(16,185,129,0.06) 0%,transparent 60%),#0a0f1e}
-.lcard{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:20px;
-  padding:40px 32px;width:100%;max-width:360px;backdrop-filter:blur(20px)}
-.llogo{font-size:42px;text-align:center;margin-bottom:10px}
-.ltitle{text-align:center;font-size:22px;font-weight:900;color:#f1f5f9;margin-bottom:4px}
-.lsub{text-align:center;font-size:13px;color:#475569;margin-bottom:28px;font-style:italic}
-.lbadge{display:inline-block;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);
-  color:#f87171;border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;
-  letter-spacing:1px;margin:0 auto 24px;display:block;text-align:center;width:fit-content;margin:0 auto 20px}
-label{display:block;font-size:11px;font-weight:700;color:#64748b;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase}
-.inp{width:100%;padding:11px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
-  border-radius:10px;font-size:14px;color:#f1f5f9;margin-bottom:14px}
-.inp:focus{outline:none;border-color:#0ea5e9}
-.lbtn{width:100%;padding:13px;background:linear-gradient(135deg,#0ea5e9,#065F46);
-  color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px}
-#lmsg{text-align:center;font-size:13px;margin-top:10px;min-height:18px}
+const API = "https://mteja-ai.onrender.com";
 
-/* ── APP ── */
-#app{display:none;min-height:100vh}
-.sidebar{position:fixed;top:0;left:0;bottom:0;width:220px;background:#0d1117;
-  border-right:1px solid rgba(255,255,255,0.06);z-index:20;padding:24px 0}
-.logo-area{padding:0 20px 24px;border-bottom:1px solid rgba(255,255,255,0.06)}
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080C14;
+    --surface: #0E1420;
+    --card: #131B2A;
+    --card-hover: #172033;
+    --border: rgba(255,255,255,0.07);
+    --border-focus: rgba(16,185,129,0.5);
+    --green: #10B981;
+    --green-dim: rgba(16,185,129,0.12);
+    --amber: #F59E0B;
+    --amber-dim: rgba(245,158,11,0.12);
+    --purple: #8B5CF6;
+    --purple-dim: rgba(139,92,246,0.12);
+    --blue: #3B82F6;
+    --blue-dim: rgba(59,130,246,0.12);
+    --red: #EF4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --text: #F0F4F8;
+    --text-muted: #6B7A99;
+    --text-dim: #3D4F6B;
+    --font: 'Outfit', sans-serif;
+    --mono: 'DM Mono', monospace;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-glow: 0 0 20px rgba(16,185,129,0.15);
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: var(--font); }
+
+  .app {
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 0 40px;
+    background: var(--bg);
+  }
+
+  /* HEADER */
+  .header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(8,12,20,0.92);
+    backdrop-filter: blur(16px);
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-top {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo-row { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--green), #059669);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+    box-shadow: 0 0 16px rgba(16,185,129,0.3);
+  }
+  .logo-text { line-height: 1.1; }
+  .logo-name { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 10px; color: var(--text-muted); font-weight: 400; letter-spacing: 0.5px; text-transform: uppercase; }
+  .header-actions { display: flex; gap: 8px; }
+  .btn-icon {
+    width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+    transition: all 0.18s; flex-shrink: 0;
+  }
+  .btn-icon:hover { background: var(--card-hover); color: var(--text); }
+  .btn-icon.spinning { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .status-bar {
+    display: flex; align-items: center; gap: 6px; margin-top: 8px;
+  }
+  .status-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+    animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100% { opacity: 1; } 50% { opacity: 0.3; }
+  }
+  .status-text { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+
+  /* CONTENT */
+  .content { padding: 16px; }
+
+  /* STATS GRID */
+  .stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--card); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 14px 14px 12px;
+    position: relative; overflow: hidden; transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .stat-card:active { transform: scale(0.97); }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.amber::before { background: var(--amber); }
+  .stat-card.purple::before { background: var(--purple); }
+  .stat-card.blue::before { background: var(--blue); }
+
+  .stat-icon {
+    width: 32px; height: 32px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; margin-bottom: 10px;
+  }
+  .green .stat-icon { background: var(--green-dim); }
+  .amber .stat-icon { background: var(--amber-dim); }
+  .purple .stat-icon { background: var(--purple-dim); }
+  .blue .stat-icon { background: var(--blue-dim); }
+
+  .stat-label {
+    font-size: 10px; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;
+  }
+  .stat-value {
+    font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: -0.5px;
+  }
+  .stat-value.ksh { font-size: 19px; }
+  .green .stat-value { color: var(--green); }
+  .amber .stat-value { color: var(--amber); }
+  .purple .stat-value { color: var(--purple); }
+  .blue .stat-value { color: var(--blue); }
+  .stat-sub { font-size: 10px; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
+
+  /* REGISTER BUTTON */
+  .register-btn {
+    width: 100%; padding: 15px; border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--green), #059669);
+    color: #fff; font-family: var(--font); font-size: 15px; font-weight: 700;
+    letter-spacing: 0.2px; border: none; cursor: pointer; margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 20px rgba(16,185,129,0.25);
+    transition: all 0.18s; position: relative; overflow: hidden;
+  }
+  .register-btn::after {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background 0.18s;
+  }
+  .register-btn:hover::after { background: rgba(255,255,255,0.08); }
+  .register-btn:active { transform: scale(0.98); }
+
+  /* SECTION */
+  .section { margin-bottom: 16px; }
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .section-title {
+    font-size: 13px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .count-badge {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 1px 8px;
+    font-size: 11px; color: var(--text-muted); font-family: var(--mono);
+  }
+
+  /* CLIENT CARD */
+  .client-card {
+    background: var(--card); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 14px;
+    margin-bottom: 8px; transition: all 0.18s;
+    animation: slideIn 0.25s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .client-card:hover { border-color: rgba(255,255,255,0.12); background: var(--card-hover); }
+
+  .client-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .client-info { flex: 1; min-width: 0; }
+  .client-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; line-height: 1.2; }
+  .client-type { font-size: 11px; color: var(--text-muted); text-transform: capitalize; }
+
+  .client-meta {
+    display: flex; align-items: center; gap: 8px; margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .code-chip {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    background: var(--green-dim); color: var(--green);
+    padding: 3px 8px; border-radius: 5px; border: 1px solid rgba(16,185,129,0.2);
+  }
+  .owner-chip {
+    font-size: 11px; color: var(--text-muted);
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  .remove-btn {
+    flex-shrink: 0; width: 32px; height: 32px; border-radius: 8px;
+    background: var(--red-dim); border: 1px solid rgba(239,68,68,0.2);
+    color: var(--red); cursor: pointer; font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.18s; font-family: var(--font);
+  }
+  .remove-btn:hover { background: rgba(239,68,68,0.2); transform: scale(1.05); }
+  .remove-btn:active { transform: scale(0.95); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center; padding: 32px 16px;
+    background: var(--card); border-radius: var(--radius);
+    border: 1px dashed var(--border);
+  }
+  .empty-icon { font-size: 32px; margin-bottom: 10px; opacity: 0.5; }
+  .empty-text { font-size: 14px; color: var(--text-muted); }
+
+  /* MODAL OVERLAY */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+    display: flex; align-items: flex-end; justify-content: center;
+    animation: fadeOverlay 0.2s ease;
+  }
+  @keyframes fadeOverlay {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+  .modal {
+    background: var(--surface); border-radius: 20px 20px 0 0;
+    border: 1px solid var(--border); border-bottom: none;
+    width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto;
+    padding: 8px 16px 32px;
+    animation: slideUp 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); } to { transform: translateY(0); }
+  }
+  .modal-handle {
+    width: 40px; height: 4px; border-radius: 2px;
+    background: var(--text-dim); margin: 10px auto 16px;
+  }
+  .modal-title {
+    font-size: 19px; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.3px;
+  }
+  .modal-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+
+  /* FORM */
+  .form-group { margin-bottom: 14px; }
+  .form-label {
+    display: block; font-size: 12px; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%; padding: 13px 14px; background: var(--card);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    color: var(--text); font-family: var(--font); font-size: 15px; font-weight: 500;
+    outline: none; transition: border-color 0.18s;
+    -webkit-appearance: none; appearance: none;
+  }
+  .form-input:focus { border-color: var(--border-focus); }
+  .form-input::placeholder { color: var(--text-dim); }
+  .form-input option { background: var(--card); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .submit-btn {
+    width: 100%; padding: 15px; border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, var(--green), #059669);
+    color: #fff; font-family: var(--font); font-size: 15px; font-weight: 700;
+    border: none; cursor: pointer; margin-top: 6px;
+    transition: all 0.18s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 16px rgba(16,185,129,0.25);
+  }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .submit-btn:not(:disabled):active { transform: scale(0.98); }
+
+  .cancel-btn {
+    width: 100%; padding: 13px; border-radius: var(--radius-sm);
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-muted); font-family: var(--font); font-size: 14px; font-weight: 600;
+    cursor: pointer; margin-top: 8px; transition: all 0.18s;
+  }
+  .cancel-btn:hover { background: var(--card); color: var(--text); }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    z-index: 300; padding: 12px 20px; border-radius: 50px;
+    font-size: 13px; font-weight: 600; white-space: nowrap;
+    animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translate(-50%, 20px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+  .toast.success { background: var(--green); color: #fff; }
+  .toast.error { background: var(--red); color: #fff; }
+
+  /* CONFIRM MODAL */
+  .confirm-modal {
+    background: var(--surface); border-radius: 16px;
+    border: 1px solid var(--border); padding: 20px;
+    width: calc(100% - 48px); max-width: 320px;
+    margin: auto;
+    animation: scaleIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .confirm-center { display: flex; align-items: center; justify-content: center; }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); }
+  }
+  .confirm-icon { font-size: 32px; text-align: center; margin-bottom: 10px; }
+  .confirm-title { font-size: 16px; font-weight: 800; text-align: center; margin-bottom: 6px; }
+  .confirm-text { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 18px; line-height: 1.5; }
+  .confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .confirm-yes {
+    padding: 12px; border-radius: var(--radius-sm);
+    background: var(--red); border: none; color: #fff;
+    font-family: var(--font); font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .confirm-yes:active { transform: scale(0.97); }
+  .confirm-no {
+    padding: 12px; border-radius: var(--radius-sm);
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .confirm-no:active { transform: scale(0.97); }
+
+  /* LOADER */
+  .loader {
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px; gap: 6px;
+  }
+  .loader-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+    animation: bounce 0.8s infinite;
+  }
+  .loader-dot:nth-child(2) { animation-delay: 0.15s; }
+  .loader-dot:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%,80%,100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+`;
+
+const BUSINESS_TYPES = [
+  "salon", "barbershop", "restaurant", "hotel", "boutique",
+  "pharmacy", "electronics", "hardware", "supermarket", "other"
+];
+
+export default function MtejaApp() {
+  const [stats, setStats] = useState({ businesses: 0, customers: 0, transactions: 0, revenue: 0 });
+  const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    business_name: "", owner_name: "", phone: "", business_type: "", location: ""
+  });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const fetchData = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    try {
+      const [statsRes, clientsRes] = await Promise.allSettled([
+        fetch(`${API}/api/stats`),
+        fetch(`${API}/api/businesses`)
+      ]);
+
+      if (statsRes.status === "fulfilled" && statsRes.value.ok) {
+        const d = await statsRes.value.json();
+        setStats({
+          businesses: d.businesses ?? d.total_businesses ?? 0,
+          customers: d.customers ?? d.total_customers ?? 0,
+          transactions: d.transactions ?? d.total_transactions ?? 0,
+          revenue: d.revenue ?? d.total_revenue ?? 0,
+        });
+      }
+
+      if (clientsRes.status === "fulfilled" && clientsRes.value.ok) {
+        const d = await clientsRes.value.json();
+        setClients(Array.isArray(d) ? d : d.businesses ?? d.clients ?? []);
+      }
+    } catch (e) {
+      // silent — data stays at defaults
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const handleRegister = async () => {
+    const { business_name, owner_name, phone, business_type } = form;
+    if (!business_name || !owner_name || !phone || !business_type) {
+      showToast("Fill in all required fields", "error");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API}/api/businesses`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setClients(prev => [data.business ?? data, ...prev]);
+        setStats(s => ({ ...s, businesses: s.businesses + 1 }));
+        setShowRegister(false);
+        setForm({ business_name: "", owner_name: "", phone: "", business_type: "", location: "" });
+        showToast("✓ Client registered successfully");
+        fetchData(false);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.message ?? "Registration failed", "error");
+      }
+    } catch {
+      showToast("Network error — check connection", "error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRemove = async (client) => {
+    setConfirmRemove(null);
+    try {
+      const id = client.id ?? client._id ?? client.business_code;
+      const res = await fetch(`${API}/api/businesses/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setClients(prev => prev.filter(c => (c.id ?? c._id ?? c.business_code) !== id));
+        setStats(s => ({ ...s, businesses: Math.max(0, s.businesses - 1) }));
+        showToast("Client removed");
+      } else {
+        showToast("Could not remove client", "error");
+      }
+    } catch {
+      showToast("Network error", "error");
+    }
+  };
+
+  const fmtRevenue = (n) => {
+    if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
+    if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+    return n.toLocaleString();
+  };
+
+  return (
+    <>
+      <style>{styles}</style>
+      <div className="app">
+        {/* HEADER */}
+        <header className="header">
+          <div className="header-top">
+            <div className="logo-row">
+              <div className="logo-icon">📊</div>
+              <div className="logo-text">
+                <div className="logo-name">MTEJA AI</div>
+                <div className="logo-sub">Admin Dashboard</div>
+              </div>
+            </div>
+            <div className="header-actions">
+              <button className={`btn-icon ${refreshing ? "spinning" : ""}`}
+                onClick={() => fetchData(true)} title="Refresh">⟳</button>
+              <button className="btn-icon" title="Logout"
+                onClick={() => showToast("Logout coming soon", "error")}>⏻</button>
+            </div>
+          </div>
+          <div className="status-bar">
+            <div className="status-dot" />
+            <span className="status-text">Live · Kisumu, Kenya</span>
+          </div>
+        </header>
+
+        <div className="content">
+          {/* STATS */}
+          <div className="stats-grid">
+            <div className="stat-card green">
+              <div className="stat-icon">🏪</div>
+              <div className="stat-label">Businesses</div>
+              <div className="stat-value">{stats.businesses}</div>
+              <div className="stat-sub">Registered</div>
+            </div>
+            <div className="stat-card blue">
+              <div className="stat-icon">👥</div>
+              <div className="stat-label">Customers</div>
+              <div className="stat-value">{stats.customers}</div>
+              <div className="stat-sub">Logged total</div>
+            </div>
+            <div className="stat-card amber">
+              <div className="stat-icon">💰</div>
+              <div className="stat-label">Transactions</div>
+              <div className="stat-value">{stats.transactions}</div>
+              <div className="stat-sub">All time</div>
+            </div>
+            <div className="stat-card purple">
+              <div className="stat-icon">📈</div>
+              <div className="stat-label">Revenue</div>
+              <div className={`stat-value ksh`}>Ksh {fmtRevenue(stats.revenue)}</div>
+              <div className="stat-sub">Tracked</div>
+            </div>
+          </div>
+
+          {/* REGISTER BUTTON */}
+          <button className="register-btn" onClick={() => setShowRegister(true)}>
+            <span>＋</span> Register New Client
+          </button>
+
+          {/* CLIENTS LIST */}
+          <div className="section">
+            <div className="section-header">
+              <span className="section-title">🏢 Registered Clients</span>
+              <span className="count-badge">{clients.length}</span>
+            </div>
+
+            {loading ? (
+              <div className="loader">
+                <div className="loader-dot" />
+                <div className="loader-dot" />
+                <div className="loader-dot" />
+              </div>
+            ) : clients.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">🏪</div>
+                <div className="empty-text">No clients yet — register the first one!</div>
+              </div>
+            ) : clients.map((c, i) => (
+              <div key={c.id ?? c._id ?? c.business_code ?? i} className="client-card">
+                <div className="client-top">
+                  <div className="client-info">
+                    <div className="client-name">{c.business_name ?? c.name}</div>
+                    <div className="client-type">{c.business_type ?? c.type ?? "business"}</div>
+                  </div>
+                  <button className="remove-btn"
+                    onClick={() => setConfirmRemove(c)} title="Remove client">✕</button>
+                </div>
+                <div className="client-meta">
+                  {(c.business_code ?? c.code) &&
+                    <span className="code-chip">{c.business_code ?? c.code}</span>}
+                  <span className="owner-chip">
+                    👤 {c.owner_name ?? c.owner ?? "—"}
+                  </span>
+                  {c.phone && <span className="owner-chip">📞 {c.phone}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* REGISTER MODAL */}
+        {showRegister && (
+          <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowRegister(false)}>
+            <div className="modal">
+              <div className="modal-handle" />
+              <div className="modal-title">Register Client</div>
+              <div className="modal-sub">Add a new business to MTEJA AI</div>
+
+              <div className="form-group">
+                <label className="form-label">Business Name *</label>
+                <input className="form-input" placeholder="e.g. Warembo Super Saloon"
+                  value={form.business_name}
+                  onChange={e => setForm(f => ({ ...f, business_name: e.target.value }))} />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Owner Name *</label>
+                  <input className="form-input" placeholder="Full name"
+                    value={form.owner_name}
+                    onChange={e => setForm(f => ({ ...f, owner_name: e.target.value }))} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Phone *</label>
+                  <input className="form-input" placeholder="07XX XXX XXX" type="tel"
+                    value={form.phone}
+                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Business Type *</label>
+                <select className="form-input"
+                  value={form.business_type}
+                  onChange={e => setForm(f => ({ ...f, business_type: e.target.value }))}>
+                  <option value="">Select type…</option>
+                  {BUSINESS_TYPES.map(t => (
+                    <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Location</label>
+                <input className="form-input" placeholder="e.g. Kondele, Kisumu"
+                  value={form.location}
+                  onChange={e => setForm(f => ({ ...f, location: e.target.value }))} />
+              </div>
+
+              <button className="submit-btn" onClick={handleRegister} disabled={submitting}>
+                {submitting ? "Registering…" : "✓ Register Client"}
+              </button>
+              <button className="cancel-btn" onClick={() => setShowRegister(false)}>Cancel</button>
+            </div>
+          </div>
+        )}
+
+        {/* CONFIRM REMOVE */}
+        {confirmRemove && (
+          <div className="modal-overlay confirm-center"
+            onClick={(e) => e.target === e.currentTarget && setConfirmRemove(null)}>
+            <div className="confirm-modal">
+              <div className="confirm-icon">⚠️</div>
+              <div className="confirm-title">Remove Client?</div>
+              <div className="confirm-text">
+                This will permanently remove{" "}
+                <strong>{confirmRemove.business_name ?? confirmRemove.name}</strong>{" "}
+                from MTEJA AI. This cannot be undone.
+              </div>
+              <div className="confirm-actions">
+                <button className="confirm-no" onClick={() => setConfirmRemove(null)}>Cancel</button>
+                <button className="confirm-yes" onClick={() => handleRemove(confirmRemove)}>Remove</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TOAST */}
+        {toast && <div className={`toast ${toast.type}`}>{toast.msg}</div>}
+      </div>
+    </>
+  );
+}
 .logo-t{font-size:20px;font-weight:900;color:#f1f5f9}
 .logo-s{font-size:11px;color:#22c55e;font-weight:700;letter-spacing:1px}
 .admin-badge{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);
