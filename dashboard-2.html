@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MTEJA AI Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f0fdf4;min-height:100vh}
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#064E3B,#065F46);padding:20px}
+.card{background:#fff;border-radius:20px;padding:36px 28px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.logo{text-align:center;font-size:48px;margin-bottom:8px}
+h1{text-align:center;font-size:24px;font-weight:900;color:#064E3B;margin-bottom:4px}
+.sub{text-align:center;color:#94a3b8;font-size:14px;margin-bottom:24px}
+label{display:block;font-size:11px;font-weight:700;color:#64748b;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase}
+input{width:100%;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:15px;color:#0f172a;margin-bottom:14px}
+input:focus{outline:none;border-color:#065F46}
+.btn{width:100%;padding:14px;background:#065F46;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px}
+.msg{text-align:center;font-size:13px;margin-top:10px;min-height:18px}
+#app{display:none}
+.header{background:linear-gradient(135deg,#064E3B,#065F46);padding:18px 16px;color:#fff;position:sticky;top:0;z-index:10}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.biz-code{font-size:10px;color:#6ee7b7;font-weight:700;letter-spacing:2px;margin-bottom:4px}
+.biz-name{font-size:18px;font-weight:900}
+.biz-type{font-size:12px;color:#a7f3d0}
+.logout{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer}
+.qs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.qs-box{background:rgba(255,255,255,0.12);border-radius:10px;padding:10px;text-align:center}
+.qs-val{font-size:20px;font-weight:900}
+.qs-lbl{font-size:10px;color:#6ee7b7;font-weight:600;margin-top:2px}
+.tabs{background:#fff;border-bottom:1px solid #e2e8f0;display:flex;overflow-x:auto;position:sticky;top:140px;z-index:9}
+.tab{flex:0 0 auto;background:none;border:none;padding:13px 16px;font-size:13px;font-weight:600;color:#94a3b8;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+.tab.on{color:#065F46;border-bottom-color:#065F46}
+.body{max-width:680px;margin:0 auto;padding:16px 14px 80px}
+.section{background:#fff;border-radius:14px;padding:18px;border:1px solid #e2e8f0;margin-bottom:14px}
+.stitle{font-size:15px;font-weight:800;color:#0f172a;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat{background:#fff;border-radius:12px;padding:16px;border:1px solid #e2e8f0;border-left:4px solid var(--c)}
+.stat-lbl{font-size:10px;color:#94a3b8;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.stat-val{font-size:22px;font-weight:900;color:#0f172a}
+.stat-sub{font-size:12px;color:var(--c);margin-top:4px;font-weight:600}
+.row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #f8fafc}
+.row:last-child{border:none}
+.rn{font-size:14px;font-weight:700;color:#0f172a}
+.ri{font-size:12px;color:#94a3b8}
+.ra{font-size:15px;font-weight:900;color:#065F46}
+.rp{font-size:11px;color:#f59e0b;font-weight:700}
+.ccard{background:#fff;border-radius:12px;padding:14px;border:1px solid #e2e8f0;margin-bottom:8px}
+.cname{font-size:15px;font-weight:800;color:#0f172a}
+.cphone{font-size:12px;color:#64748b;margin-top:2px}
+.badge{border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700}
+.cgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.cs{background:#f8fafc;border-radius:8px;padding:8px;text-align:center}
+.csv{font-size:13px;font-weight:800;color:#0f172a}
+.csl{font-size:10px;color:#94a3b8}
+.srch{width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e2e8f0;font-size:14px;color:#0f172a;margin-bottom:14px}
+.fu-card{background:#fff;border-radius:12px;padding:16px;border-left:4px solid #ef4444;border:1px solid #e2e8f0;margin-bottom:10px}
+.fu-msg{background:#f0fdf4;border-radius:8px;padding:10px 12px;font-size:13px;color:#065F46;font-style:italic;margin:10px 0}
+.wa-btn{display:block;text-align:center;background:#25D366;color:#fff;border-radius:8px;padding:10px;font-size:13px;font-weight:700;text-decoration:none}
+.empty{color:#94a3b8;font-size:14px;padding:20px 0;text-align:center}
+.footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;padding:10px;text-align:center;font-size:12px;color:#94a3b8}
+.contact-actions{display:flex;gap:8px;margin-top:10px}
+.ca-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 6px;border-radius:9px;font-size:12px;font-weight:700;text-decoration:none;transition:opacity .15s;white-space:nowrap}
+.ca-btn:active{opacity:.7}
+.ca-call{background:#eff6ff;color:#1d4ed8}
+.ca-wa{background:#dcfce7;color:#15803d}
+.ca-sms{background:#fef3c7;color:#92400e}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="card">
+    <div class="logo">🤖</div>
+    <h1>MTEJA AI</h1>
+    <div class="sub">Business Dashboard · Kisumu</div>
+    <label>Your WhatsApp Number</label>
+    <input id="iphone" type="tel" placeholder="e.g. 254712345678"/>
+    <label>Your Business Code</label>
+    <input id="icode" type="text" placeholder="e.g. MTEJA-FAA123"/>
+    <button class="btn" onclick="doLogin()">🚀 Open Dashboard</button>
+    <div class="msg" id="msg"></div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="header">
+    <div class="hdr-top">
+      <div>
+        <div class="biz-code" id="hcode"></div>
+        <div class="biz-name" id="hname"></div>
+        <div class="biz-type" id="htype"></div>
+      </div>
+      <button class="logout" onclick="doLogout()">← Logout</button>
+    </div>
+    <div class="qs">
+      <div class="qs-box"><div class="qs-val" id="qr">—</div><div class="qs-lbl">Week Revenue</div></div>
+      <div class="qs-box"><div class="qs-val" id="qc">—</div><div class="qs-lbl">Customers</div></div>
+      <div class="qs-box"><div class="qs-val" id="qf">—</div><div class="qs-lbl">Follow-ups</div></div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab on" onclick="go('ov',this)">📊 Overview</button>
+    <button class="tab" onclick="go('cu',this)">👥 Customers</button>
+    <button class="tab" onclick="go('tx',this)">💰 Sales</button>
+    <button class="tab" onclick="go('fu',this)">🔔 Follow-ups</button>
+  </div>
+  <div class="body">
+    <div id="pov"></div>
+    <div id="pcu" style="display:none"></div>
+    <div id="ptx" style="display:none"></div>
+    <div id="pfu" style="display:none"></div>
+  </div>
+  <div class="footer">MTEJA AI · Kisumu, Kenya 🌊</div>
+</div>
+
+<script>
+const SB = window.supabase.createClient(
+  "https://ypwmlgvgssdkicrlkhii.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd21sZ3Znc3Nka2ljcmxraGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzNjg0ODgsImV4cCI6MjA5MTk0NDQ4OH0.8U1rsJ4RsUUiMPLWC2cHx9pcZgmpQXDjqdPGppVudq8"
+);
+
+let BIZ=null, CUSTS=[], TXNS=[];
+
+async function doLogin() {
+  const phone = document.getElementById("iphone").value.trim();
+  const code  = document.getElementById("icode").value.trim().toUpperCase();
+  const msg   = document.getElementById("msg");
+  if(!phone||!code){msg.style.color="#ef4444";msg.textContent="Fill in both fields.";return;}
+  msg.style.color="#f59e0b"; msg.textContent="Checking...";
+  try {
+    const {data,error} = await SB.from("businesses").select("*").eq("phone",phone).eq("code",code).single();
+    if(error||!data){msg.style.color="#ef4444";msg.textContent="❌ Not found. Check number and code.";console.error(error);return;}
+    msg.style.color="#10b981";msg.textContent="✅ Opening dashboard...";
+    BIZ=data;
+    localStorage.setItem("m_session",JSON.stringify({phone,code}));
+    setTimeout(showApp,600);
+  } catch(e){msg.style.color="#ef4444";msg.textContent="❌ "+e.message;}
+}
+
+function doLogout(){localStorage.removeItem("m_session");location.reload();}
+
+function showApp(){
+  document.getElementById("login").style.display="none";
+  document.getElementById("app").style.display="block";
+  document.getElementById("hcode").textContent=BIZ.code;
+  document.getElementById("hname").textContent=BIZ.name||"My Business";
+  document.getElementById("htype").textContent=(BIZ.type||"")+" · Since "+new Date(BIZ.created_at).toLocaleDateString("en-KE",{month:"short",year:"numeric"});
+  loadAll();
+}
+
+async function loadAll(){
+  const p=BIZ.phone, wk=new Date(Date.now()-7*86400000).toISOString();
+  const [cr,tr] = await Promise.all([
+    SB.from("customers").select("*").eq("business_phone",p).order("total_spent",{ascending:false}),
+    SB.from("transactions").select("*").eq("business_phone",p).order("created_at",{ascending:false}).limit(50)
+  ]);
+  CUSTS=cr.data||[]; TXNS=tr.data||[];
+  const wkRev=TXNS.filter(t=>t.created_at>wk).reduce((s,t)=>s+t.amount,0);
+  const ov=CUSTS.filter(c=>Math.floor((Date.now()-new Date(c.last_visit))/86400000)>=18);
+  document.getElementById("qr").textContent="Ksh "+wkRev.toLocaleString();
+  document.getElementById("qc").textContent=CUSTS.length;
+  document.getElementById("qf").textContent=ov.length;
+  drawOv(wkRev,ov); drawCu(); drawTx(); drawFu(ov);
+}
+
+function drawOv(wkRev,ov){
+  const tot=TXNS.reduce((s,t)=>s+t.amount,0);
+  const avg=TXNS.length?Math.round(tot/TXNS.length):0;
+  const pts=CUSTS.reduce((s,c)=>s+c.total_points,0);
+  document.getElementById("pov").innerHTML=`
+    <div class="grid2">
+      <div class="stat" style="--c:#065F46"><div class="stat-lbl">Total Revenue</div><div class="stat-val">Ksh ${tot.toLocaleString()}</div><div class="stat-sub">↑ Ksh ${wkRev.toLocaleString()} this week</div></div>
+      <div class="stat" style="--c:#0ea5e9"><div class="stat-lbl">Total Sales</div><div class="stat-val">${TXNS.length}</div><div class="stat-sub">Avg Ksh ${avg.toLocaleString()}</div></div>
+      <div class="stat" style="--c:#f59e0b"><div class="stat-lbl">Customers</div><div class="stat-val">${CUSTS.length}</div><div class="stat-sub">${ov.length} need follow-up</div></div>
+      <div class="stat" style="--c:#8b5cf6"><div class="stat-lbl">Points Given</div><div class="stat-val">${pts}</div><div class="stat-sub">Loyalty rewards</div></div>
+    </div>
+    <div class="section"><div class="stitle">🏆 Top Customers</div>
+      ${CUSTS.slice(0,3).map((c,i)=>`<div class="row"><div><div class="rn">${["🥇","🥈","🥉"][i]} ${c.name}</div><div class="ri">${c.visit_count} visits · ${c.total_points} pts</div></div><div class="ra">Ksh ${c.total_spent.toLocaleString()}</div></div>`).join("")||"<div class='empty'>No customers yet. Log your first sale!</div>"}
+    </div>
+    <div class="section"><div class="stitle">⚡ Recent Sales</div>
+      ${TXNS.slice(0,4).map(t=>`<div class="row"><div><div class="rn">${t.customer_name}</div><div class="ri">${t.item||"—"} · ${new Date(t.created_at).toLocaleDateString("en-KE")}</div></div><div style="text-align:right"><div class="ra">Ksh ${t.amount.toLocaleString()}</div><div class="rp">+${t.points_awarded} pts</div></div></div>`).join("")||"<div class='empty'>No sales yet.</div>"}
+    </div>`;
+}
+
+function drawCu(q){
+  q=q||"";
+  const list=CUSTS.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())||(c.phone||"").includes(q));
+  document.getElementById("pcu").innerHTML=`
+    <input class="srch" placeholder="🔍 Search name or phone..." oninput="drawCu(this.value)" value="${q}"/>
+    ${list.map(c=>{
+      const d=Math.floor((Date.now()-new Date(c.last_visit))/86400000);
+      const [bc,tc,lbl]=c.total_spent>5000?["#fef3c7","#92400e","⭐ VIP"]:d>=21?["#fee2e2","#991b1b","⚠ Overdue"]:["#d1fae5","#065f46","● Active"];
+      const raw=c.phone||"";
+      const wa=raw.startsWith("254")?raw:"254"+raw.replace(/^0/,"");
+      const tel=raw?"tel:"+raw:"";
+      const sms=raw?"sms:"+raw:"";
+      const hasPhone=!!raw;
+      return `<div class="ccard" style="border-left:4px solid ${tc}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="cname">${c.name}</div>
+            <div class="cphone">📞 ${raw||"—"}</div>
+          </div>
+          <span class="badge" style="background:${bc};color:${tc}">${lbl}</span>
+        </div>
+        <div class="cgrid">
+          <div class="cs"><div class="csv">Ksh ${c.total_spent.toLocaleString()}</div><div class="csl">Spent</div></div>
+          <div class="cs"><div class="csv">⭐ ${c.total_points}</div><div class="csl">Points</div></div>
+          <div class="cs"><div class="csv">${d}d ago</div><div class="csl">Last Visit</div></div>
+        </div>
+        ${hasPhone?`<div class="contact-actions">
+          <a href="${tel}" class="ca-btn ca-call">📞 Call</a>
+          <a href="https://wa.me/${wa}?text=Habari%20${encodeURIComponent(c.name.split(' ')[0])}!" target="_blank" class="ca-btn ca-wa">💬 WhatsApp</a>
+          <a href="${sms}" class="ca-btn ca-sms">✉️ SMS</a>
+        </div>`:""}
+      </div>`;
+    }).join("")||"<div class='empty'>No customers yet.</div>"}`;
+}
+
+function drawTx(){
+  document.getElementById("ptx").innerHTML=`<div class="section"><div class="stitle" style="display:flex;justify-content:space-between">All Sales <span style="color:#065F46;font-size:13px">${TXNS.length} records</span></div>
+    ${TXNS.map(t=>`<div class="row"><div><div class="rn">${t.customer_name}</div><div class="ri">${t.item||"—"}</div><div style="font-size:11px;color:#cbd5e1">${new Date(t.created_at).toLocaleDateString("en-KE",{day:"numeric",month:"short",year:"numeric"})}</div></div><div style="text-align:right"><div class="ra">Ksh ${t.amount.toLocaleString()}</div><div class="rp">+${t.points_awarded} pts</div></div></div>`).join("")||"<div class='empty'>No sales yet.</div>"}
+  </div>`;
+}
+
+function drawFu(ov){
+  document.getElementById("pfu").innerHTML=ov.length===0
+    ?`<div class="section" style="text-align:center;color:#065F46;padding:40px">🎉<br><br>No overdue customers!<br>Everyone visited recently.</div>`
+    :`<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#991b1b">⚠️ ${ov.length} customer(s) haven't visited in 18+ days!</div>
+    ${ov.map(c=>{const d=Math.floor((Date.now()-new Date(c.last_visit))/86400000),wa=(c.phone||"").replace(/^0/,"254"),fn=c.name.split(" ")[0];
+    return `<div class="fu-card"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><div><div class="cname">${c.name}</div><div class="cphone">📞 ${c.phone||"—"}</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:700;color:#ef4444">${d} days ago</div><div style="font-size:11px;color:#94a3b8">Ksh ${c.total_spent.toLocaleString()} total</div></div></div>
+    <div class="fu-msg">💬 "${fn}! Tumekukosa sana. Kuja uone deals zetu mpya 😊"</div>
+    <a href="https://wa.me/${wa}?text=Habari%20${fn}!%20Tumekukosa%20😊" target="_blank" class="wa-btn">📱 Send WhatsApp</a></div>`;}).join("")}`;
+}
+
+function go(id,btn){
+  ["ov","cu","tx","fu"].forEach(x=>document.getElementById("p"+x).style.display=x===id?"block":"none");
+  document.querySelectorAll(".tab").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+}
+
+window.addEventListener("load",async()=>{
+  const s=localStorage.getItem("m_session");
+  if(!s)return;
+  try{
+    const {phone,code}=JSON.parse(s);
+    const {data,error}=await SB.from("businesses").select("*").eq("phone",phone).eq("code",code).single();
+    if(data&&!error){BIZ=data;showApp();}
+    else localStorage.removeItem("m_session");
+  }catch(e){localStorage.removeItem("m_session");}
+});
+</script>
+</body>
+</html>
