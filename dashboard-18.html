@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MTEJA AI · Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--g:#065F46;--dg:#053D2C;--w:#10B981;--gold:#D97706;--sky:#0EA5E9;--moon:#F0FDF4;--pb:#E2E8F0;--dk:#475569;--sd:240px}
+@keyframes wv{from{transform:translateX(0)}to{transform:translateX(33.33%)}}
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sk{0%,100%{opacity:.4}50%{opacity:1}}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,sans-serif;background:#f1f5f9;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── LOGIN ── */
+#pg-login{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;
+  padding:16px;position:relative;overflow:hidden;
+  background:linear-gradient(160deg,var(--dg) 0%,var(--g) 60%,#091a10 100%)}
+.l-star{position:absolute;width:2px;height:2px;border-radius:50%;background:#FCD34D;animation:sk 3s ease-in-out infinite}
+.lwrap{position:absolute;bottom:0;left:-100%;width:300%;height:60px;pointer-events:none}
+.lw{position:absolute;bottom:0;width:100%;height:100%}
+.lw1{animation:wv 9s linear infinite;opacity:.3}
+.lw2{animation:wv 13s linear -4s infinite;opacity:.52}
+.lw3{animation:wv 17s linear -8s infinite;opacity:.8}
+.lcard{background:#fff;border-radius:24px;padding:36px 28px 28px;width:100%;max-width:380px;
+  box-shadow:0 32px 80px rgba(0,0,0,.45);position:relative;z-index:2;animation:fu .6s ease}
+.llogo{display:flex;justify-content:center;margin-bottom:16px}
+.ltitle{text-align:center;font-size:28px;font-weight:900;color:var(--dg);margin-bottom:3px;letter-spacing:-.5px}
+.ltitle span{color:var(--gold)}
+.lsub{text-align:center;color:var(--dk);font-size:13px;margin-bottom:4px}
+.ltag{text-align:center;font-size:11px;font-weight:700;color:var(--w);letter-spacing:2px;text-transform:uppercase;margin-bottom:24px}
+.lcard label{display:block;font-size:11px;font-weight:700;color:var(--dk);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase}
+.lcard input{width:100%;padding:13px 15px;border:1.5px solid var(--pb);border-radius:11px;font-size:16px;
+  color:#0f172a;margin-bottom:14px;-webkit-appearance:none;transition:border .2s}
+.lcard input:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px rgba(6,95,70,.1)}
+.lbtn{width:100%;padding:15px;background:linear-gradient(135deg,var(--g),var(--dg));color:#fff;
+  border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 16px rgba(6,95,70,.3);transition:all .2s}
+.lbtn:active{transform:scale(.98);opacity:.92}
+#lmsg{text-align:center;font-size:13px;margin-top:12px;min-height:18px}
+.lfoot{text-align:center;font-size:11px;color:var(--dk);margin-top:16px;opacity:.65}
+
+/* ── APP ── */
+#pg-app{display:none}
+
+/* ── SIDEBAR ── */
+.sidebar{display:none}
+
+.dtopbar{display:none}
+.dfooter{display:none}
+
+/* ── MOBILE HEADER ── */
+.mhdr{background:linear-gradient(135deg,var(--dg),var(--g));color:#fff;
+  position:sticky;top:0;z-index:50}
+.mhdr-inner{padding:13px 15px 11px}
+.mhdr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
+.mbrand{display:flex;align-items:center;gap:10px}
+.mcode{font-size:10px;color:#6ee7b7;font-weight:700;letter-spacing:2px;font-family:monospace;margin-bottom:2px}
+.mname{font-size:17px;font-weight:900;line-height:1;color:#fff}
+.mtype{font-size:11px;color:rgba(167,243,208,.8);margin-top:2px}
+.mbtn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:#fff;
+  border-radius:8px;padding:8px 13px;font-size:12px;font-weight:600;cursor:pointer}
+.mqs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+.mqsb{background:rgba(255,255,255,.12);border-radius:9px;padding:9px 5px;text-align:center}
+.mqsv{font-size:17px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums}
+.mqsl{font-size:9px;color:#6ee7b7;font-weight:600;margin-top:2px;letter-spacing:.5px;text-transform:uppercase}
+.mwave{height:30px;position:relative;overflow:hidden;margin:9px -15px -11px}
+.mw{position:absolute;bottom:0;width:300%;left:-100%;height:100%}
+.mw1{animation:wv 9s linear infinite;opacity:.22}
+.mw2{animation:wv 13s linear -4s infinite;opacity:.42}
+.mw3{animation:wv 17s linear -8s infinite;opacity:.65}
+
+/* ── BOTTOM TABS ── */
+.btabs{position:fixed;bottom:0;left:0;right:0;z-index:50;
+  background:#fff;border-top:1px solid var(--pb);
+  display:grid;grid-template-columns:repeat(5,1fr);
+  box-shadow:0 -4px 16px rgba(0,0,0,.08);
+  padding-bottom:env(safe-area-inset-bottom,0px)}
+.btab{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:9px 4px 7px;border:none;background:none;cursor:pointer;color:var(--dk)}
+.btab .ti{font-size:21px;margin-bottom:3px;transition:transform .15s}
+.btab .tl{font-size:10px;font-weight:600}
+.btab.on{color:var(--g)}
+.btab.on .ti{transform:translateY(-2px)}
+
+/* ── PAGE WRAP ── */
+.pwrap{padding:14px 13px 88px}
+.page{display:none}
+.page.on{display:block;animation:fu .2s ease}
+
+/* ── STAT GRID ── */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.scard{background:#fff;border-radius:14px;padding:15px 13px;border:1px solid var(--pb);
+  border-left:4px solid var(--c);box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.slbl{font-size:10px;color:#94a3b8;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
+.sval{font-size:21px;font-weight:900;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.ssub{font-size:11px;color:var(--c);margin-top:4px;font-weight:600}
+
+/* ── CARDS ── */
+.card{background:#fff;border-radius:14px;padding:16px 15px;border:1px solid var(--pb);
+  margin-bottom:13px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.ctitle{font-size:15px;font-weight:800;color:#0f172a;margin-bottom:13px;
+  display:flex;justify-content:space-between;align-items:center}
+.ccnt{font-size:13px;color:var(--g);font-weight:700}
+
+/* ── ROWS ── */
+.row{display:flex;justify-content:space-between;align-items:center;
+  padding:11px 0;border-bottom:1px solid #f8fafc}
+.row:last-child{border:none}
+.rn{font-size:14px;font-weight:700;color:#0f172a}
+.ri{font-size:11px;color:#94a3b8;margin-top:2px}
+.ra{font-size:15px;font-weight:800;color:var(--g);font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+.rp{font-size:11px;color:#f59e0b;font-weight:700}
+
+/* ── CUSTOMER CARDS ── */
+.ccard{background:#fff;border-radius:13px;padding:14px;border:1px solid var(--pb);
+  margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.cname{font-size:15px;font-weight:800;color:#0f172a}
+.cph{font-size:12px;color:var(--dk);margin-top:2px}
+.badge{border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700}
+.cgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:9px}
+.cs{background:var(--moon);border-radius:8px;padding:8px 5px;text-align:center}
+.csv{font-size:13px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums}
+.csl{font-size:10px;color:#94a3b8;margin-top:1px}
+.cacts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:9px}
+.ca{padding:9px 5px;border-radius:9px;font-size:12px;font-weight:700;text-decoration:none;text-align:center;display:block}
+.ca-call{background:#eff6ff;color:#1d4ed8}
+.ca-wa{background:#dcfce7;color:#15803d}
+.ca-sms{background:#fef3c7;color:#92400e}
+
+/* ── SEARCH ── */
+.srch{width:100%;padding:13px 15px;border-radius:11px;border:1.5px solid var(--pb);
+  font-size:16px;color:#0f172a;margin-bottom:13px;-webkit-appearance:none}
+.srch:focus{outline:none;border-color:var(--g)}
+
+/* ── FOLLOW-UP ── */
+.fucard{background:#fff;border-radius:13px;padding:15px;border-left:4px solid #ef4444;
+  border:1px solid var(--pb);margin-bottom:11px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.fumsg{background:var(--moon);border-radius:9px;padding:11px 13px;font-size:13px;
+  color:var(--g);font-style:italic;margin:9px 0;border-left:3px solid var(--w);line-height:1.6}
+.wabtn{display:block;text-align:center;background:#25D366;color:#fff;
+  border-radius:11px;padding:12px;font-size:14px;font-weight:700;text-decoration:none}
+.empty{color:#94a3b8;font-size:14px;padding:28px 0;text-align:center}
+
+/* ── BROADCAST ── */
+.bcseg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.bcsb{background:#fff;border-radius:12px;padding:13px 7px;text-align:center;border:1px solid var(--pb)}
+.bcsbv{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+.bcsbl{font-size:10px;color:#94a3b8;margin-top:3px}
+.pills{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:11px}
+.pill{padding:7px 13px;border-radius:20px;border:1px solid var(--pb);background:var(--moon);
+  font-size:12px;font-weight:700;color:var(--dk);cursor:pointer}
+.pill.on{background:var(--g);color:#fff;border-color:var(--g)}
+.hint{font-size:11px;color:#94a3b8;margin-bottom:7px;line-height:1.5}
+.hint b{color:var(--g)}
+textarea{width:100%;padding:13px;border:1.5px solid var(--pb);border-radius:11px;
+  font-size:15px;resize:none;line-height:1.6;color:#0f172a;min-height:125px;-webkit-appearance:none}
+textarea:focus{outline:none;border-color:var(--g)}
+.pvbox{background:linear-gradient(135deg,var(--moon),#d1fae5);border-radius:13px;
+  padding:14px;margin-bottom:13px;border:1px solid #a7f3d0}
+.pvlbl{font-size:10px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:1px;margin-bottom:9px}
+.pvbub{background:#fff;border-radius:0 11px 11px 11px;padding:13px 15px;
+  font-size:14px;line-height:1.7;color:#0f172a;white-space:pre-wrap}
+.waguide{background:#fff;border-radius:14px;border:1px solid var(--pb);overflow:hidden;margin-bottom:13px}
+.wahd{background:linear-gradient(135deg,#25D366,#128C7E);padding:14px 16px;color:#fff}
+.watit{font-size:15px;font-weight:800}
+.wasub{font-size:12px;opacity:.85;margin-top:2px}
+.wabody{padding:15px}
+.step{display:flex;gap:11px;margin-bottom:13px;align-items:flex-start}
+.stepn{width:27px;min-width:27px;height:27px;border-radius:50%;
+  background:linear-gradient(135deg,var(--g),#0D7A57);
+  color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.stept{font-size:13px;color:#0f172a;line-height:1.5}
+.stept b{color:var(--g)}
+.cpbtn{width:100%;padding:12px;border-radius:11px;background:var(--moon);
+  border:1.5px solid var(--g);color:var(--g);font-size:13px;font-weight:700;cursor:pointer;margin-top:5px}
+.cpbtn:active{background:var(--g);color:#fff}
+.numsbox{background:var(--moon);border-radius:8px;padding:11px;font-size:12px;
+  font-family:monospace;color:#0f172a;line-height:1.8;margin-top:7px;
+  max-height:115px;overflow-y:auto;display:none;word-break:break-all}
+.sarr{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+.sbtn{padding:14px;border-radius:11px;border:none;font-size:14px;font-weight:700;cursor:pointer;color:#fff}
+.sbwa{background:#25D366}
+.sbsm{background:var(--sky)}
+.snote{font-size:11px;color:#94a3b8;text-align:center;margin-bottom:11px;line-height:1.5}
+.bclist{background:#fff;border-radius:13px;border:1px solid var(--pb);overflow:hidden;margin-bottom:13px}
+.bclhd{padding:11px 15px;background:var(--moon);border-bottom:1px solid var(--pb);
+  font-size:11px;font-weight:700;color:var(--dk);text-transform:uppercase;letter-spacing:.8px}
+.bclr{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 15px;border-bottom:1px solid #f8fafc}
+.bclr:last-child{border:none}
+.bclrn{font-size:14px;font-weight:700;color:#0f172a}
+.bclrp{font-size:11px;color:#94a3b8;margin-top:2px}
+.bcwa{padding:7px 11px;border-radius:8px;background:#dcfce7;color:#15803d;
+  border:none;font-size:12px;font-weight:700;cursor:pointer;margin-right:5px}
+.bcsms{padding:7px 11px;border-radius:8px;background:#dbeafe;color:#1d4ed8;
+  border:none;font-size:12px;font-weight:700;cursor:pointer}
+.bcsent{font-size:11px;font-weight:700;color:#15803d;padding:4px 9px;background:#dcfce7;border-radius:7px}
+
+/* ── PRO CARD ── */
+.procard{background:linear-gradient(135deg,var(--dg) 0%,var(--g) 70%,#0D7A57 100%);
+  border-radius:18px;padding:22px;color:#fff;border:1px solid rgba(16,185,129,.25);margin-bottom:14px}
+.probadge{background:linear-gradient(135deg,var(--gold),#F59E0B);border-radius:20px;
+  padding:3px 13px;font-size:11px;font-weight:800;display:inline-block;margin-bottom:11px}
+.protitle{font-size:17px;font-weight:900;margin-bottom:5px}
+.prosub{font-size:13px;opacity:.85;margin-bottom:15px;line-height:1.6}
+.profeat{list-style:none;margin-bottom:17px}
+.profeat li{font-size:13px;margin-bottom:7px;padding-left:26px;position:relative;opacity:.9}
+.profeat li::before{content:"✓";position:absolute;left:0;background:rgba(16,185,129,.25);
+  border:1px solid rgba(16,185,129,.4);border-radius:50%;width:18px;height:18px;
+  display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}
+.procta{background:linear-gradient(135deg,var(--gold),#F59E0B);color:#fff;border:none;
+  border-radius:11px;padding:13px;width:100%;font-size:14px;font-weight:800;cursor:pointer}
+
+/* ═══ DESKTOP ≥ 901px ═══════════════════════════════ */
+@media(min-width:901px){
+  .mob-only{display:none!important}
+  .btabs{display:none!important}
+
+  .appshell{margin-left:var(--sd)}
+
+  .sidebar{
+    display:flex;flex-direction:column;
+    width:var(--sd);position:fixed;top:0;left:0;bottom:0;z-index:50;
+    background:linear-gradient(180deg,var(--dg) 0%,var(--g) 100%);
+    box-shadow:4px 0 20px rgba(0,0,0,.18)
+  }
+  .sdlogo{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+  .sdli{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+  .sdtitle{font-size:17px;font-weight:900;color:#fff;line-height:1}
+  .sdtitle span{color:var(--gold)}
+  .sdbadge{font-size:10px;color:#6ee7b7;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+  .sdcode{font-size:10px;color:#6ee7b7;font-weight:700;letter-spacing:2px;font-family:monospace;margin-bottom:3px}
+  .sdname{font-size:14px;font-weight:900;color:#fff;line-height:1.2}
+  .sdtype{font-size:11px;color:rgba(167,243,208,.75);margin-top:2px}
+  .sdqs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;padding:11px 13px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .sdqb{background:rgba(255,255,255,.1);border-radius:8px;padding:7px 3px;text-align:center}
+  .sdqv{font-size:15px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums}
+  .sdql{font-size:9px;color:#6ee7b7;font-weight:600;margin-top:2px;letter-spacing:.5px}
+  .sdnav{flex:1;padding:12px 9px;overflow-y:auto}
+  .nvbtn{display:flex;align-items:center;gap:9px;width:100%;padding:10px 11px;
+    border-radius:9px;border:none;background:none;color:rgba(255,255,255,.6);
+    font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;
+    text-align:left;margin-bottom:3px}
+  .nvbtn:hover{background:rgba(255,255,255,.1);color:#fff}
+  .nvbtn.on{background:rgba(255,255,255,.15);color:#fff}
+  .nvbtn .ni{font-size:17px;width:22px;text-align:center}
+  .sdfooter{padding:13px;border-top:1px solid rgba(255,255,255,.1)}
+  .sdout{width:100%;padding:9px;border-radius:8px;background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8);
+    font-size:12px;font-weight:600;cursor:pointer}
+  .sdout:hover{background:rgba(255,255,255,.18);color:#fff}
+
+  .appshell{margin-left:0;display:flex;flex-direction:column;min-height:100vh}
+  .dtopbar{background:#fff;border-bottom:1px solid var(--pb);padding:15px 28px;
+    display:flex;align-items:center;justify-content:space-between;
+    position:sticky;top:0;z-index:10;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+  .dtitle{font-size:20px;font-weight:900;color:#0f172a}
+  .dsub{font-size:12px;color:var(--dk);margin-top:2px}
+  .dright{display:flex;align-items:center;gap:11px}
+  .drefresh{padding:8px 15px;border-radius:8px;border:1.5px solid var(--pb);
+    background:#fff;color:var(--dk);font-size:13px;font-weight:600;cursor:pointer}
+  .drefresh:hover{border-color:var(--g);color:var(--g)}
+
+  .pwrap{padding:26px 28px 40px;flex:1}
+  .sgrid{grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:24px}
+  .sval{font-size:26px;letter-spacing:-1px}
+
+  .d2col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .dfull{grid-column:1/-1}
+  .dtopbar{display:flex}
+  .dfooter{display:flex;padding:14px 28px;border-top:1px solid var(--pb);background:#fff;
+    font-size:12px;color:var(--dk);justify-content:space-between}
+  .dfooter b{color:var(--g)}
+}
+@media(max-width:380px){.mqsv{font-size:14px}.mname{font-size:15px}.sval{font-size:18px}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="pg-login">
+  <div class="l-star" style="top:12%;left:9%;width:3px;height:3px;animation-delay:0s"></div>
+  <div class="l-star" style="top:25%;left:82%;animation-delay:.9s"></div>
+  <div class="l-star" style="top:8%;left:55%;width:3px;height:3px;animation-delay:1.7s"></div>
+  <div class="l-star" style="top:40%;left:93%;animation-delay:.4s"></div>
+  <div class="lwrap">
+    <svg class="lw lw1" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,30 C180,8 360,52 540,30 C720,8 900,52 1080,30 C1260,8 1440,52 1440,30 L1440,60 L0,60 Z" fill="#0D7A57"/></svg>
+    <svg class="lw lw2" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,30 C180,8 360,52 540,30 C720,8 900,52 1080,30 C1260,8 1440,52 1440,30 L1440,60 L0,60 Z" fill="#065F46"/></svg>
+    <svg class="lw lw3" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0,30 C180,8 360,52 540,30 C720,8 900,52 1080,30 C1260,8 1440,52 1440,30 L1440,60 L0,60 Z" fill="#053D2C"/></svg>
+  </div>
+  <div class="lcard">
+    <div class="llogo">
+      <svg width="74" height="74" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="bgG" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#053D2C"/><stop offset="100%" stop-color="#065F46"/></linearGradient>
+          <linearGradient id="sunG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#D97706" stop-opacity=".7"/></linearGradient>
+          <linearGradient id="w1G" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#10B981" stop-opacity=".9"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity=".7"/></linearGradient>
+          <linearGradient id="w2G" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#0D7A57"/><stop offset="100%" stop-color="#10B981"/></linearGradient>
+          <clipPath id="rr"><rect width="96" height="96" rx="22"/></clipPath>
+        </defs>
+        <rect width="96" height="96" rx="22" fill="url(#bgG)"/>
+        <rect x="0" y="0" width="96" height="52" fill="#053D2C" clip-path="url(#rr)"/>
+        <circle cx="48" cy="30" r="11" fill="url(#sunG)" opacity=".92"/>
+        <line x1="48" y1="17" x2="48" y2="13" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
+        <line x1="57" y1="21" x2="60" y2="18" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
+        <line x1="39" y1="21" x2="36" y2="18" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
+        <line x1="60" y1="30" x2="64" y2="30" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
+        <line x1="36" y1="30" x2="32" y2="30" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
+        <g clip-path="url(#rr)">
+          <rect x="0" y="50" width="96" height="46" fill="#0A3828"/>
+          <path d="M0,63 C12,55 24,71 36,63 C48,55 60,71 72,63 C80,58 88,65 96,63 L96,96 L0,96 Z" fill="url(#w2G)"/>
+          <path d="M0,58 C10,50 20,66 30,58 C40,50 50,66 60,58 C70,50 82,64 96,58 L96,96 L0,96 Z" fill="url(#w1G)" opacity=".8"/>
+        </g>
+        <rect x="26" y="38" width="44" height="30" rx="8" fill="#065F46" stroke="#10B981" stroke-width="1.5"/>
+        <polygon points="38,68 34,79 46,68" fill="#065F46" stroke="#10B981" stroke-width="1" stroke-linejoin="round"/>
+        <circle cx="36" cy="53" r="3.5" fill="#10B981"/>
+        <circle cx="48" cy="53" r="3.5" fill="#D97706"/>
+        <circle cx="60" cy="53" r="3.5" fill="#10B981"/>
+        <rect x=".75" y=".75" width="94.5" height="94.5" rx="21.5" fill="none" stroke="#10B981" stroke-width="1.5" opacity=".3"/>
+      </svg>
+    </div>
+    <div class="ltitle">MTEJA<span> AI</span></div>
+    <div class="lsub">Business Dashboard · Kisumu</div>
+    <div class="ltag">🌊 AI ya Biashara Yako</div>
+    <form autocomplete="off" onsubmit="return false">
+      <label>Your WhatsApp Number</label>
+      <input id="iphone" type="tel" placeholder="e.g. 254712345678" autocomplete="off" inputmode="numeric" spellcheck="false"/>
+      <label>Your Business Code</label>
+      <input id="icode" type="text" placeholder="e.g. MTEJA-FAA123" autocomplete="off" autocapitalize="characters" spellcheck="false"/>
+      <button class="lbtn" type="button" onclick="doLogin()">🚀 Fungua Dashboard</button>
+    </form>
+    <div id="lmsg"></div>
+    <div class="lfoot">Powered by <strong>MTEJA AI</strong> · Kisumu, Kenya 🌊</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="pg-app">
+
+  <!-- DESKTOP SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sdlogo">
+      <div class="sdli">
+        <svg width="36" height="36" viewBox="0 0 96 96" fill="none">
+          <rect width="96" height="96" rx="22" fill="url(#bgG)"/>
+          <rect x="0" y="0" width="96" height="52" fill="#053D2C" clip-path="url(#rr)"/>
+          <circle cx="48" cy="30" r="11" fill="url(#sunG)" opacity=".92"/>
+          <g clip-path="url(#rr)"><rect x="0" y="50" width="96" height="46" fill="#0A3828"/>
+          <path d="M0,63 C12,55 24,71 36,63 C48,55 60,71 72,63 L96,96 L0,96 Z" fill="#0D7A57"/>
+          <path d="M0,58 C10,50 20,66 30,58 C40,50 50,66 60,58 C70,50 82,64 96,58 L96,96 L0,96 Z" fill="#10B981" opacity=".8"/></g>
+          <rect x="26" y="38" width="44" height="30" rx="8" fill="#065F46" stroke="#10B981" stroke-width="1.5"/>
+          <circle cx="36" cy="53" r="3.5" fill="#10B981"/><circle cx="48" cy="53" r="3.5" fill="#D97706"/><circle cx="60" cy="53" r="3.5" fill="#10B981"/>
+        </svg>
+        <div><div class="sdtitle">MTEJA<span> AI</span></div><div class="sdbadge">Dashboard</div></div>
+      </div>
+      <div class="sdcode" id="sdCode"></div>
+      <div class="sdname" id="sdName"></div>
+      <div class="sdtype" id="sdType"></div>
+    </div>
+    <div class="sdqs">
+      <div class="sdqb"><div class="sdqv" id="sdR">—</div><div class="sdql">Revenue</div></div>
+      <div class="sdqb"><div class="sdqv" id="sdC">—</div><div class="sdql">Wateja</div></div>
+      <div class="sdqb"><div class="sdqv" id="sdF">—</div><div class="sdql">Follow</div></div>
+    </div>
+    <nav class="sdnav">
+      <button class="nvbtn on" onclick="go('ov',this)"><span class="ni">📊</span><span>Overview</span></button>
+      <button class="nvbtn" onclick="go('cu',this)"><span class="ni">👥</span><span>Customers</span></button>
+      <button class="nvbtn" onclick="go('tx',this)"><span class="ni">💰</span><span>Sales</span></button>
+      <button class="nvbtn" onclick="go('fu',this)"><span class="ni">🔔</span><span>Follow-ups</span></button>
+      <button class="nvbtn" onclick="go('bc',this)"><span class="ni">📢</span><span>Broadcast</span></button>
+    </nav>
+    <div class="sdfooter"><button class="sdout" onclick="doLogout()">← Logout</button></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="appshell">
+    <!-- Mobile header -->
+    <div class="mhdr mob-only">
+      <div class="mhdr-inner">
+        <div class="mhdr-top">
+          <div class="mbrand">
+            <svg width="34" height="34" viewBox="0 0 96 96" fill="none">
+              <rect width="96" height="96" rx="22" fill="url(#bgG)"/>
+              <rect x="0" y="0" width="96" height="52" fill="#053D2C" clip-path="url(#rr)"/>
+              <circle cx="48" cy="30" r="11" fill="url(#sunG)" opacity=".92"/>
+              <g clip-path="url(#rr)"><rect x="0" y="50" width="96" height="46" fill="#0A3828"/>
+              <path d="M0,63 C12,55 24,71 36,63 C48,55 60,71 72,63 L96,96 L0,96 Z" fill="#0D7A57"/>
+              <path d="M0,58 C10,50 20,66 30,58 C40,50 50,66 60,58 C70,50 82,64 96,58 L96,96 L0,96 Z" fill="#10B981" opacity=".8"/></g>
+              <rect x="26" y="38" width="44" height="30" rx="8" fill="#065F46" stroke="#10B981" stroke-width="1.5"/>
+              <circle cx="36" cy="53" r="3.5" fill="#10B981"/><circle cx="48" cy="53" r="3.5" fill="#D97706"/><circle cx="60" cy="53" r="3.5" fill="#10B981"/>
+            </svg>
+            <div>
+              <div class="mcode" id="mCode"></div>
+              <div class="mname" id="mName"></div>
+              <div class="mtype" id="mType"></div>
+            </div>
+          </div>
+          <button class="mbtn" onclick="doLogout()">← Out</button>
+        </div>
+        <div class="mqs">
+          <div class="mqsb"><div class="mqsv" id="mR">—</div><div class="mqsl">Week Rev</div></div>
+          <div class="mqsb"><div class="mqsv" id="mC">—</div><div class="mqsl">Wateja</div></div>
+          <div class="mqsb"><div class="mqsv" id="mF">—</div><div class="mqsl">Follow-ups</div></div>
+        </div>
+        <div class="mwave">
+          <svg class="mw mw1" viewBox="0 0 1440 30" preserveAspectRatio="none"><path d="M0,15 C180,4 360,26 540,15 C720,4 900,26 1080,15 C1260,4 1440,26 1440,15 L1440,30 L0,30 Z" fill="#0D7A57"/></svg>
+          <svg class="mw mw2" viewBox="0 0 1440 30" preserveAspectRatio="none"><path d="M0,15 C180,4 360,26 540,15 C720,4 900,26 1080,15 C1260,4 1440,26 1440,15 L1440,30 L0,30 Z" fill="#065F46"/></svg>
+          <svg class="mw mw3" viewBox="0 0 1440 30" preserveAspectRatio="none"><path d="M0,15 C180,4 360,26 540,15 C720,4 900,26 1080,15 C1260,4 1440,26 1440,15 L1440,30 L0,30 Z" fill="#f0fdf4" fill-opacity=".1"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop topbar -->
+    <div class="dtopbar" id="dtopbar">
+      <div><div class="dtitle" id="dtitle">📊 Overview</div><div class="dsub" id="dsub">Loading...</div></div>
+      <div class="dright">
+        <button class="drefresh" onclick="loadAll()">⟳ Refresh</button>
+        <span style="font-size:12px;color:var(--dk)">● <span style="color:var(--w);font-weight:700">Live</span></span>
+      </div>
+    </div>
+
+    <!-- Pages -->
+    <div class="pwrap">
+      <div id="pov" class="page on"></div>
+      <div id="pcu" class="page"></div>
+      <div id="ptx" class="page"></div>
+      <div id="pfu" class="page"></div>
+      <div id="pbc" class="page"></div>
+    </div>
+
+    <div class="dfooter" id="dfooter">
+      <div><b>MTEJA AI</b> · <span style="color:var(--gold);font-style:italic">AI ya Biashara Yako</span></div>
+      <div>Kisumu, Kenya 🌊</div>
+    </div>
+  </div>
+
+  <!-- Mobile bottom tabs -->
+  <nav class="btabs mob-only">
+    <button class="btab on" onclick="go('ov',this)"><div class="ti">📊</div><div class="tl">Overview</div></button>
+    <button class="btab" onclick="go('cu',this)"><div class="ti">👥</div><div class="tl">Wateja</div></button>
+    <button class="btab" onclick="go('tx',this)"><div class="ti">💰</div><div class="tl">Sales</div></button>
+    <button class="btab" onclick="go('fu',this)"><div class="ti">🔔</div><div class="tl">Follow</div></button>
+    <button class="btab" onclick="go('bc',this)"><div class="ti">📢</div><div class="tl">Broadcast</div></button>
+  </nav>
+</div>
+
+<script>
+// ── SUPABASE ───────────────────────────────────────────
+const SB = window.supabase.createClient(
+  "https://ypwmlgvgssdkicrlkhii.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd21sZ3Znc3Nka2ljcmxraGlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzNjg0ODgsImV4cCI6MjA5MTk0NDQ4OH0.8U1rsJ4RsUUiMPLWC2cHx9pcZgmpQXDjqdPGppVudq8"
+);
+
+let BIZ=null, CUSTS=[], TXNS=[];
+const PAGES = ["ov","cu","tx","fu","bc"];
+const PTITLES = {ov:"📊 Overview",cu:"👥 Customers",tx:"💰 Sales",fu:"🔔 Follow-ups",bc:"📢 Broadcast"};
+const PDESCS  = {ov:"Wiki yako kwa muhtasari",cu:"Wateja wako wote",tx:"Mauzo yote",fu:"Kuwasiliana na wateja",bc:"Tuma ujumbe kwa wote"};
+
+// ── HELPERS ────────────────────────────────────────────
+function $(id){ return document.getElementById(id); }
+function set(id,val){ const e=$(id); if(e) e.textContent=val; }
+function isDesktop(){ return window.innerWidth >= 901; }
+
+// ── LOGIN ──────────────────────────────────────────────
+async function doLogin() {
+  const phone = $("iphone").value.trim();
+  const code  = $("icode").value.trim().toUpperCase();
+  const msg   = $("lmsg");
+  if (!phone || !code) { msg.style.color="#ef4444"; msg.textContent="Jaza namba na code."; return; }
+  msg.style.color="#f59e0b"; msg.textContent="Inakagua...";
+  try {
+    const { data, error } = await SB.from("businesses").select("*")
+      .eq("phone", phone).eq("code", code).single();
+    if (error || !data) {
+      msg.style.color="#ef4444";
+      msg.textContent="❌ Haikupatikana. Angalia namba na code.";
+      return;
+    }
+    msg.style.color="#10b981"; msg.textContent="✅ Inafungua...";
+    BIZ = data;
+    localStorage.setItem("m_session", JSON.stringify({phone, code}));
+    setTimeout(openApp, 500);
+  } catch(e) {
+    msg.style.color="#ef4444"; msg.textContent="❌ " + e.message;
+  }
+}
+
+// ── OPEN APP ───────────────────────────────────────────
+function openApp() {
+  $("pg-login").style.display = "none";
+  $("pg-app").style.display   = "block";
+  // CSS handles topbar + footer visibility via @media
+  fillHeaders();
+  loadAll();
+}
+
+function doLogout() {
+  localStorage.removeItem("m_session");
+  location.reload();
+}
+
+// ── FILL HEADERS ──────────────────────────────────────
+function fillHeaders() {
+  if (!BIZ) return;
+  const code  = BIZ.code || "";
+  const name  = BIZ.name || "My Business";
+  const since = new Date(BIZ.created_at).toLocaleDateString("en-KE",{month:"short",year:"numeric"});
+  const type  = (BIZ.type||"") + " · Since " + since;
+  // Mobile
+  set("mCode", code); set("mName", name); set("mType", type);
+  // Desktop sidebar
+  set("sdCode", code); set("sdName", name); set("sdType", type);
+}
+
+function fillStats(wkRev, cLen, oLen) {
+  const rev = "Ksh " + wkRev.toLocaleString();
+  set("mR", rev);   set("mC", cLen);   set("mF", oLen);
+  set("sdR", rev);  set("sdC", cLen);  set("sdF", oLen);
+  const s = $("dsub");
+  if (s && BIZ) s.textContent = BIZ.name + " · " + cLen + " wateja · " + rev + " wiki hii";
+}
+
+// ── NAVIGATION ─────────────────────────────────────────
+function go(id, btn) {
+  PAGES.forEach(x => {
+    const el = $(("p"+x));
+    if (!el) return;
+    el.className = x===id ? "page on" : "page";
+  });
+  document.querySelectorAll(".nvbtn,.btab").forEach(b => b.classList.remove("on"));
+  if (btn) {
+    btn.classList.add("on");
+    const idx = PAGES.indexOf(id);
+    const nvBtns = document.querySelectorAll(".nvbtn");
+    const btTabs = document.querySelectorAll(".btab");
+    if (nvBtns[idx]) nvBtns[idx].classList.add("on");
+    if (btTabs[idx]) btTabs[idx].classList.add("on");
+  }
+  set("dtitle", PTITLES[id]||"");
+  const ds = $("dsub");
+  if (ds) ds.textContent = PDESCS[id] || "";
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+// ── LOAD DATA ──────────────────────────────────────────
+async function loadAll() {
+  if (!BIZ) return;
+  const p  = BIZ.phone;
+  const wk = new Date(Date.now() - 7*86400000).toISOString();
+  try {
+    const [cr, tr] = await Promise.all([
+      SB.from("customers").select("*").eq("business_phone",p).order("total_spent",{ascending:false}),
+      SB.from("transactions").select("*").eq("business_phone",p).order("created_at",{ascending:false}).limit(50)
+    ]);
+    CUSTS = cr.data || [];
+    TXNS  = tr.data || [];
+  } catch(e) { console.error("Load error:", e.message); }
+
+  const wkRev = TXNS.filter(t=>t.created_at>wk).reduce((s,t)=>s+t.amount, 0);
+  const ov    = CUSTS.filter(c=>Math.floor((Date.now()-new Date(c.last_visit))/86400000)>=18);
+  fillStats(wkRev, CUSTS.length, ov.length);
+  drawOv(wkRev, ov);
+  drawCu();
+  drawTx();
+  drawFu(ov);
+  drawBc();
+}
+
+// ── DRAW OVERVIEW ──────────────────────────────────────
+function drawOv(wkRev, ov) {
+  const tot = TXNS.reduce((s,t)=>s+t.amount, 0);
+  const avg = TXNS.length ? Math.round(tot/TXNS.length) : 0;
+  const pts = CUSTS.reduce((s,c)=>s+c.total_points, 0);
+  const top = CUSTS.slice(0,3).map((c,i)=>`
+    <div class="row">
+      <div><div class="rn">${["🥇","🥈","🥉"][i]} ${c.name}</div><div class="ri">${c.visit_count} ziara · ${c.total_points} pts</div></div>
+      <div class="ra">Ksh ${c.total_spent.toLocaleString()}</div>
+    </div>`).join("") || "<div class='empty'>Hakuna wateja bado.</div>";
+  const rec = TXNS.slice(0,4).map(t=>`
+    <div class="row">
+      <div><div class="rn">${t.customer_name}</div><div class="ri">${t.item||"—"} · ${new Date(t.created_at).toLocaleDateString("en-KE")}</div></div>
+      <div style="text-align:right"><div class="ra">Ksh ${t.amount.toLocaleString()}</div><div class="rp">+${t.points_awarded} pts</div></div>
+    </div>`).join("") || "<div class='empty'>Hakuna mauzo bado.</div>";
+
+  $("pov").innerHTML = `
+    <div class="sgrid">
+      <div class="scard" style="--c:#065F46"><div class="slbl">Total Revenue</div><div class="sval">Ksh ${tot.toLocaleString()}</div><div class="ssub">↑ Ksh ${wkRev.toLocaleString()} wiki hii</div></div>
+      <div class="scard" style="--c:#0EA5E9"><div class="slbl">Total Sales</div><div class="sval">${TXNS.length}</div><div class="ssub">Wastani Ksh ${avg.toLocaleString()}</div></div>
+      <div class="scard" style="--c:#D97706"><div class="slbl">Wateja</div><div class="sval">${CUSTS.length}</div><div class="ssub">${ov.length} wanahitaji follow-up</div></div>
+      <div class="scard" style="--c:#8B5CF6"><div class="slbl">Loyalty Points</div><div class="sval">${pts}</div><div class="ssub">Zawadi za uaminifu</div></div>
+    </div>
+    <div class="d2col">
+      <div class="card"><div class="ctitle">🏆 Wateja Bora</div>${top}</div>
+      <div class="card"><div class="ctitle">⚡ Mauzo ya Hivi Karibuni</div>${rec}</div>
+    </div>`;
+}
+
+// ── DRAW CUSTOMERS ─────────────────────────────────────
+function drawCu(q) {
+  q = q || "";
+  const list = CUSTS.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())||(c.phone||"").includes(q));
+  $("pcu").innerHTML = `
+    <input class="srch" placeholder="🔍 Tafuta jina au namba..." oninput="drawCu(this.value)" value="${q.replace(/"/g,'&quot;')}"/>
+    ${list.map(c=>{
+      const d = Math.floor((Date.now()-new Date(c.last_visit))/86400000);
+      const [bc,tc,lb] = c.total_spent>5000 ? ["#fef3c7","#92400e","⭐ VIP"] :
+                         d>=21 ? ["#fee2e2","#991b1b","⚠ Muda"] : ["#d1fae5","#065f46","● Active"];
+      const raw = c.phone||""; const wa = raw.startsWith("254")?raw:"254"+raw.replace(/^0/,"");
+      const fn = encodeURIComponent((c.name||"").split(" ")[0]);
+      return `<div class="ccard" style="border-left:4px solid ${tc}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div><div class="cname">${c.name}</div><div class="cph">📞 ${raw||"—"}</div></div>
+          <span class="badge" style="background:${bc};color:${tc}">${lb}</span>
+        </div>
+        <div class="cgrid">
+          <div class="cs"><div class="csv">Ksh ${c.total_spent.toLocaleString()}</div><div class="csl">Alitumia</div></div>
+          <div class="cs"><div class="csv">⭐ ${c.total_points}</div><div class="csl">Points</div></div>
+          <div class="cs"><div class="csv">${d}d</div><div class="csl">Ziara ya Mwisho</div></div>
+        </div>
+        ${raw?`<div class="cacts">
+          <a href="tel:${raw}" class="ca ca-call">📞 Piga</a>
+          <a href="https://wa.me/${wa}?text=Habari%20${fn}!" target="_blank" class="ca ca-wa">💬 WhatsApp</a>
+          <a href="sms:${raw}" class="ca ca-sms">✉️ SMS</a>
+        </div>`:""}
+      </div>`;
+    }).join("")||"<div class='empty'>Hakuna wateja bado.</div>"}`;
+}
+
+// ── DRAW TRANSACTIONS ──────────────────────────────────
+function drawTx() {
+  $("ptx").innerHTML = `
+    <div class="card">
+      <div class="ctitle">Mauzo Yote <span class="ccnt">${TXNS.length} rekodi</span></div>
+      ${TXNS.map(t=>`
+        <div class="row">
+          <div><div class="rn">${t.customer_name}</div><div class="ri">${t.item||"—"}</div><div style="font-size:11px;color:#cbd5e1">${new Date(t.created_at).toLocaleDateString("en-KE",{day:"numeric",month:"short",year:"numeric"})}</div></div>
+          <div style="text-align:right"><div class="ra">Ksh ${t.amount.toLocaleString()}</div><div class="rp">+${t.points_awarded} pts</div></div>
+        </div>`).join("")||"<div class='empty'>Hakuna mauzo bado.</div>"}
+    </div>`;
+}
+
+// ── DRAW FOLLOW-UPS ────────────────────────────────────
+function drawFu(ov) {
+  if (!ov || !ov.length) {
+    $("pfu").innerHTML = `<div class="card" style="text-align:center;padding:40px 16px;color:var(--g)">🎉<br><br><strong>Wateja wote wamekuja hivi karibuni!</strong></div>`;
+    return;
+  }
+  $("pfu").innerHTML = `
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#991b1b">
+      ⚠️ Wateja ${ov.length} hawajafika kwa siku 18+!
+    </div>
+    ${ov.map(c=>{
+      const d   = Math.floor((Date.now()-new Date(c.last_visit))/86400000);
+      const raw = c.phone||""; const wa = raw.startsWith("254")?raw:"254"+raw.replace(/^0/,"");
+      const fn  = (c.name||"").split(" ")[0];
+      return `<div class="fucard">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <div><div class="cname">${c.name}</div><div class="cph">📞 ${raw||"—"}</div></div>
+          <div style="text-align:right"><div style="font-size:13px;font-weight:700;color:#ef4444">${d} siku</div><div style="font-size:11px;color:#94a3b8">Ksh ${c.total_spent.toLocaleString()} jumla</div></div>
+        </div>
+        <div class="fumsg">💬 "${fn}! Tumekukosa sana. Kuja uone deals zetu mpya 😊"</div>
+        ${raw?`<a href="https://wa.me/${wa}?text=Habari%20${encodeURIComponent(fn)}!%20Tumekukosa%20%F0%9F%98%8A" target="_blank" class="wabtn">📱 Tuma WhatsApp</a>`:"<div style='color:#94a3b8;font-size:13px;text-align:center'>Hakuna namba ya simu</div>"}
+      </div>`;
+    }).join("")}`;
+}
+
+// ── DRAW BROADCAST ─────────────────────────────────────
+const TMPLS = [
+  {id:"promo",lbl:"🎉 Promo",    msg:"Habari {name}! 👋\nTuna *special offer* leo tu!\n🏷️ Kuja upate deal nzuri.\n\nTungoja! — {biz}"},
+  {id:"thanks",lbl:"🙏 Asante",  msg:"Asante sana {name}! 🌟\nTunashukuri ujio wako.\n⭐ Una pointi {pts} — karibu tena!\n— {biz}"},
+  {id:"miss",  lbl:"💔 Kukosa",  msg:"Habari {name}! 😊\nTumekukosa sana!\nKuja ututembelee, tuna mambo mapya. 🎁\n— {biz}"},
+  {id:"points",lbl:"⭐ Points",  msg:"Habari {name}! 🌟\nUna *{pts} loyalty points* kwa {biz}!\nKuja uzitumie leo ⏰"},
+  {id:"custom",lbl:"✏️ Custom",  msg:"Habari {name}! 👋\n\n[Andika ujumbe wako hapa]\n\n— {biz}"},
+];
+let selT="promo", sentSet=new Set(), numsVis=false;
+
+function bldMsg(raw,c){
+  const fn=(c&&c.name?c.name:"Mteja").split(" ")[0];
+  return raw.replace(/{name}/g,fn).replace(/{pts}/g,c?c.total_points:0).replace(/{biz}/g,BIZ?BIZ.name:"Sisi");
+}
+function getMsgTxt(){const ta=$("bcTxt");return ta?ta.value:TMPLS.find(t=>t.id===selT).msg;}
+function updatePreview(){const raw=getMsgTxt(),first=CUSTS.find(c=>c.phone)||CUSTS[0];const el=$("bcPreview");if(el)el.innerHTML=bldMsg(raw,first).replace(/\*([^*]+)\*/g,"<b>$1</b>").replace(/\n/g,"<br>");}
+function pickTpl(id){selT=id;const ta=$("bcTxt");if(ta)ta.value=TMPLS.find(t=>t.id===id).msg;document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("on",p.dataset.id===id));updatePreview();}
+function toggleNums(){numsVis=!numsVis;const b=$("numsBox");if(b)b.style.display=numsVis?"block":"none";}
+function copyNums(){const nums=CUSTS.filter(c=>c.phone).map(c=>{const r=c.phone.replace(/\s+/g,"");return r.startsWith("254")?"0"+r.slice(3):r;}).join("\n");navigator.clipboard.writeText(nums).then(()=>{const b=$("cpNumsBtn");if(b){const o=b.textContent;b.textContent="✅ Imenakiliwa!";setTimeout(()=>b.textContent=o,2500);}});}
+let sIdx=0;
+function sendAllNow(type){const wp=CUSTS.filter(c=>c.phone);if(!wp.length)return;sIdx=0;function next(){if(sIdx>=wp.length)return;const c=wp[sIdx];const wa=c.phone.startsWith("254")?c.phone:"254"+c.phone.replace(/^0/,"");const msg=bldMsg(getMsgTxt(),c);window.open(type==="wa"?`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`:`sms:${c.phone}?body=${encodeURIComponent(msg)}`,"_blank");sentSet.add(c.phone);sIdx++;const btn=$("brbtn"+c.id);if(btn)btn.innerHTML='<span class="bcsent">✓ Imetumwa</span>';if(sIdx<wp.length)setTimeout(next,1800);}next();}
+function sendOneNow(type,id,dest){const c=CUSTS.find(x=>String(x.id)===String(id));const wa=dest.startsWith("254")?dest:"254"+dest.replace(/^0/,"");const msg=bldMsg(getMsgTxt(),c);window.open(type==="wa"?`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`:`sms:${dest}?body=${encodeURIComponent(msg)}`,"_blank");sentSet.add(dest);const btn=$("brbtn"+id);if(btn)btn.innerHTML='<span class="bcsent">✓ Imetumwa</span>';}
+
+function drawBc(){
+  const wp=CUSTS.filter(c=>c.phone), np=CUSTS.filter(c=>!c.phone);
+  const tpl=TMPLS.find(t=>t.id===selT);
+  const prev=CUSTS.find(c=>c.phone)||CUSTS[0];
+  const allNums=wp.map(c=>{const r=c.phone.replace(/\s+/g,"");return r.startsWith("254")?"0"+r.slice(3):r;}).join("\n");
+  $("pbc").innerHTML=`
+    <div class="bcseg">
+      <div class="bcsb"><div class="bcsbv">${CUSTS.length}</div><div class="bcsbl">Wateja Wote</div></div>
+      <div class="bcsb"><div class="bcsbv" style="color:#15803d">${wp.length}</div><div class="bcsbl">Wana Namba</div></div>
+      <div class="bcsb"><div class="bcsbv" style="color:var(--gold)">${sentSet.size}</div><div class="bcsbl">Imetumwa</div></div>
+    </div>
+    <div class="card">
+      <div class="ctitle">✍️ Tunga Ujumbe</div>
+      <div class="pills">${TMPLS.map(t=>`<span class="pill${t.id===selT?" on":""}" data-id="${t.id}" onclick="pickTpl('${t.id}')">${t.lbl}</span>`).join("")}</div>
+      <div class="hint">Tumia <b>{name}</b> = jina · <b>{pts}</b> = pointi · <b>{biz}</b> = biashara</div>
+      <textarea id="bcTxt" oninput="updatePreview()">${tpl.msg}</textarea>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">👁️ Mfano — kwa ${prev?prev.name:"—"}</div>
+      <div class="pvbub" id="bcPreview">${bldMsg(tpl.msg,prev).replace(/\*([^*]+)\*/g,"<b>$1</b>").replace(/\n/g,"<br>")}</div>
+    </div>
+    <div class="waguide">
+      <div class="wahd"><div class="watit">💬 WhatsApp Business Broadcast (Inashauriwa)</div><div class="wasub">Tuma kwa wateja wote kutoka simu yako bila malipo</div></div>
+      <div class="wabody">
+        <div class="step"><div class="stepn">1</div><div class="stept">Nakili namba za wateja, hifadhi kama contacts kwenye simu</div></div>
+        <div class="step"><div class="stepn">2</div><div class="stept">WhatsApp Business → <b>⋮ → Broadcast Mpya</b> → chagua wateja</div></div>
+        <div class="step"><div class="stepn">3</div><div class="stept">Nakili ujumbe wako, paste, bonyeza <b>Tuma ✅</b></div></div>
+        <button class="cpbtn" onclick="toggleNums()">📋 Onyesha / Ficha Namba</button>
+        <div class="numsbox" id="numsBox">${allNums}</div>
+        ${wp.length?`<button class="cpbtn" id="cpNumsBtn" onclick="copyNums()" style="margin-top:8px;background:var(--g);color:#fff;border-color:var(--g)">✅ Nakili Namba Zote (${wp.length})</button>`:""}
+      </div>
+    </div>
+    <div class="card">
+      <div class="ctitle">📲 Tuma Moja kwa Moja</div>
+      ${wp.length===0?`<div class="empty">Hakuna wateja wenye namba bado.</div>`:`
+        <div class="sarr">
+          <button class="sbtn sbwa" onclick="sendAllNow('wa')">💬 WhatsApp Wote (${wp.length})</button>
+          <button class="sbtn sbsm" onclick="sendAllNow('sms')">✉️ SMS Wote (${wp.length})</button>
+        </div>
+        <div class="snote">Inafungua mazungumzo ${wp.length} moja kwa moja</div>`}
+      <div class="bclist">
+        <div class="bclhd">Tuma kwa Mteja Mmoja</div>
+        ${wp.map(c=>{const wa=c.phone.startsWith("254")?c.phone:"254"+c.phone.replace(/^0/,"");const sent=sentSet.has(c.phone);return `<div class="bclr"><div><div class="bclrn">${c.name}</div><div class="bclrp">${c.phone}</div></div><div id="brbtn${c.id}">${sent?'<span class="bcsent">✓ Imetumwa</span>':`<button class="bcwa" onclick="sendOneNow('wa','${c.id}','${wa}')">💬 WA</button><button class="bcsms" onclick="sendOneNow('sms','${c.id}','${c.phone}')">✉️ SMS</button>`}</div></div>`;}).join("")||"<div class='empty' style='padding:14px'>Hakuna wateja wenye namba.</div>"}
+      </div>
+      ${np.length?`<div style="font-size:12px;color:#94a3b8;text-align:center">⚠️ Wateja ${np.length} hawana namba</div>`:""}
+    </div>
+    <div class="procard">
+      <div class="probadge">⚡ MTEJA PRO — Inakuja Hivi Karibuni</div>
+      <div class="protitle">Auto-Broadcast kutoka MTEJA Servers</div>
+      <div class="prosub">Amri moja WhatsApp inatuma kwa wateja wote moja kwa moja — hakuna kubonyeza tena.</div>
+      <ul class="profeat">
+        <li>Amri moja inatuma kwa wateja wote</li>
+        <li>Majibu yanakuja kwenye dashboard yako</li>
+        <li>Panga broadcasts mapema kiotomatiki</li>
+      </ul>
+      <button class="procta" onclick="alert('Asante! MTEJA Pro inakuja hivi karibuni.')">🚀 Niarifu Itakapotoka</button>
+    </div>`;
+}
+
+// ── AUTO LOGIN (saved session) ─────────────────────────
+window.addEventListener("load", async () => {
+  const s = localStorage.getItem("m_session");
+  if (!s) return;
+  try {
+    const {phone, code} = JSON.parse(s);
+    const {data, error} = await SB.from("businesses").select("*")
+      .eq("phone",phone).eq("code",code).single();
+    if (data && !error) { BIZ=data; openApp(); }
+    else localStorage.removeItem("m_session");
+  } catch(e) { localStorage.removeItem("m_session"); }
+});
+</script>
+</body>
+</html>
