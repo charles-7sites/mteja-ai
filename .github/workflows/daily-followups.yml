@@ -1,0 +1,56 @@
+name: Daily Auto Follow-Ups
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual trigger'
+        required: false
+        default: 'Manual test run'
+
+jobs:
+  send-followups:
+    name: Send Follow-Up Messages
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Log run info
+        run: |
+          echo "MTEJA AI Auto Follow-Up"
+          echo "Time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "EAT: $(TZ='Africa/Nairobi' date '+%Y-%m-%d %H:%M:%S %Z')"
+
+      - name: Trigger follow-up on Render
+        id: trigger
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            --max-time 30 \
+            "${{ secrets.RENDER_URL }}/cron/followups")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response: $BODY"
+
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "Failed with status $HTTP_CODE"
+            exit 1
+          fi
+
+          echo "Follow-up job triggered successfully"
+
+      - name: Log result
+        if: always()
+        run: |
+          if [ "${{ steps.trigger.outcome }}" == "success" ]; then
+            echo "MTEJA AI daily follow-ups triggered successfully"
+          else
+            echo "Follow-up trigger failed - check Render logs"
+          fi
