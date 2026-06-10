@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>KARIBU — Joventure Hotel Kisumu</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Dancing+Script:wght@600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --teal:#29ABE2; --teal-dark:#1a8ab8;
+  --teal-dim:rgba(41,171,226,0.13); --teal-border:rgba(41,171,226,0.28);
+  --yellow:#F5C518; --yellow-dim:rgba(245,197,24,0.13);
+  --charcoal:#1a1a1e; --dark:#0e0e12; --page-bg:#09090d;
+  --card:#161619; --card2:#1d1d23; --user-bg:#122535;
+  --text:#ECEDEE; --soft:#8A93A0; --divider:rgba(255,255,255,0.07);
+  --hdr-top:#07202f; --hdr-bot:#051520;
+  --sb-bg:#0b1c29;
+}
+
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--page-bg);
+  color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+
+/* ═══ PAGE SHELL ═══ */
+.shell{display:flex;height:100vh;width:100%;overflow:hidden;background:var(--page-bg)}
+
+/* ═══ SIDEBAR ═══ */
+.sidebar{
+  display:none;flex-direction:column;justify-content:space-between;
+  width:300px;flex-shrink:0;background:var(--sb-bg);
+  border-right:1px solid var(--teal-border);padding:36px 24px 24px;
+  overflow-y:auto;position:relative
+}
+.sidebar::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--teal),var(--yellow),var(--teal))}
+.sb-top{display:flex;flex-direction:column;align-items:center;gap:14px}
+.sb-circle{width:82px;height:82px;border-radius:50%;background:#fff;
+  display:flex;align-items:center;justify-content:center;padding:9px;
+  box-shadow:0 0 0 2px var(--teal),0 0 24px rgba(41,171,226,0.28)}
+.sb-circle svg{width:100%;height:100%}
+.sb-name{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;
+  color:#fff;text-align:center;letter-spacing:0.04em;line-height:1.2}
+.sb-tag{font-family:'Dancing Script',cursive;font-size:0.95rem;
+  color:var(--teal);text-align:center}
+.sb-rule{width:36px;height:1px;background:linear-gradient(90deg,transparent,var(--teal-border),transparent)}
+.sb-desc{font-size:0.75rem;color:var(--soft);text-align:center;line-height:1.75}
+.sb-list{display:flex;flex-direction:column;gap:8px;margin-top:20px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-radius:8px;border:1px solid var(--divider);background:rgba(255,255,255,0.02);
+  cursor:pointer;transition:all 0.15s;font-size:0.76rem;color:var(--soft)}
+.sb-item:hover{border-color:var(--teal-border);background:var(--teal-dim);color:var(--teal)}
+.sb-num{width:22px;height:22px;border-radius:50%;background:var(--teal-dim);
+  color:var(--teal);font-size:0.68rem;font-weight:700;display:flex;
+  align-items:center;justify-content:center;flex-shrink:0}
+.sb-bottom{margin-top:24px}
+.sb-clabel{font-size:0.58rem;font-weight:700;letter-spacing:0.14em;
+  text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:9px}
+.sb-contact{font-size:0.73rem;color:var(--soft);line-height:1.9}
+.sb-contact a{color:var(--teal);text-decoration:none}
+.sb-contact a:hover{text-decoration:underline}
+.sb-online{display:flex;align-items:center;gap:6px;margin-top:10px;
+  font-size:0.7rem;color:#34D399}
+.sb-pulse{width:7px;height:7px;background:#34D399;border-radius:50%;
+  box-shadow:0 0 6px #34D399;flex-shrink:0}
+
+/* Show sidebar at 900px+ */
+@media(min-width:900px){.sidebar{display:flex}}
+
+/* ═══ CHAT PANEL ═══ */
+.panel{display:flex;flex-direction:column;flex:1;min-width:0;
+  background:var(--dark);border-left:1px solid var(--divider);
+  border-right:1px solid var(--divider)}
+
+/* Centre chat on very wide screens — give it a comfortable max width */
+@media(min-width:900px){
+  .shell{justify-content:flex-start}
+  .panel{max-width:600px}
+}
+@media(min-width:1400px){
+  .sidebar{width:340px}
+  .panel{max-width:640px}
+}
+
+/* ═══ HEADER ═══ */
+.header{
+  background:linear-gradient(180deg,var(--hdr-top),var(--hdr-bot));
+  padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;
+  border-bottom:1px solid var(--teal-border);
+  box-shadow:0 4px 24px rgba(0,0,0,0.55);position:relative
+}
+.header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--teal),var(--yellow),var(--teal),transparent)}
+.av{width:48px;height:48px;border-radius:50%;background:#fff;padding:5px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 0 0 2px var(--teal),0 0 16px rgba(41,171,226,0.3);overflow:hidden}
+.av svg{width:100%;height:100%;display:block}
+.hinfo{flex:1;min-width:0}
+.hname{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;
+  color:#fff;letter-spacing:0.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.htag{font-family:'Dancing Script',cursive;font-size:0.78rem;color:var(--teal);margin-top:1px}
+.hstat{display:flex;align-items:center;gap:5px;margin-top:3px}
+.pdot{width:7px;height:7px;background:#34D399;border-radius:50%;
+  box-shadow:0 0 5px #34D399;flex-shrink:0;
+  animation:glow 2s ease-in-out infinite alternate}
+@keyframes glow{from{box-shadow:0 0 3px #34D399}to{box-shadow:0 0 10px #34D399}}
+.stxt{font-size:0.65rem;color:rgba(255,255,255,0.48);font-weight:300;letter-spacing:0.03em}
+.hact{display:flex;gap:14px;color:rgba(255,255,255,0.38);font-size:1rem;cursor:pointer}
+
+/* ═══ STRIP ═══ */
+.strip-wrap{background:var(--charcoal);border-bottom:1px solid var(--divider);flex-shrink:0}
+.slabel{font-size:0.57rem;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;
+  color:rgba(255,255,255,0.22);padding:6px 14px 2px}
+.strip{padding:5px 10px 9px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.strip::-webkit-scrollbar{display:none}
+.qb{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
+  color:var(--soft);padding:6px 13px;border-radius:20px;font-size:0.71rem;
+  font-family:'Inter',sans-serif;font-weight:500;white-space:nowrap;cursor:pointer;
+  transition:all 0.15s;flex-shrink:0;letter-spacing:0.01em}
+.qb:hover{background:var(--teal-dim);border-color:var(--teal-border);color:var(--teal)}
+.qb:active{transform:scale(0.95)}
+.qb.am{background:var(--yellow-dim);border-color:rgba(245,197,24,0.4);
+  color:var(--yellow);font-weight:600}
+.qb.am:hover{background:rgba(245,197,24,0.22)}
+
+/* ═══ MESSAGES ═══ */
+.msgs{flex:1;overflow-y:auto;padding:16px 14px;display:flex;
+  flex-direction:column;gap:9px;background:var(--dark);
+  background-image:
+    linear-gradient(rgba(41,171,226,0.016) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(41,171,226,0.016) 1px,transparent 1px);
+  background-size:36px 36px}
+.msgs::-webkit-scrollbar{width:4px}
+.msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
+
+.m{display:flex;flex-direction:column;max-width:82%}
+.m.bot{align-self:flex-start}
+.m.usr{align-self:flex-end}
+@media(min-width:600px){.m{max-width:74%}}
+
+.bub{padding:10px 14px;font-size:0.85rem;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.m.bot .bub{background:var(--card);border-radius:2px 14px 14px 14px;
+  color:var(--text);border:1px solid var(--divider);border-left:2px solid var(--teal)}
+.m.usr .bub{background:var(--user-bg);border-radius:14px 2px 14px 14px;
+  color:#fff;border:1px solid rgba(41,171,226,0.2)}
+.bub strong{color:#fff;font-weight:600}
+.bub em{color:var(--teal);font-style:normal;font-weight:500}
+
+.mt{font-size:0.6rem;color:var(--soft);margin-top:3px;opacity:0.65}
+.m.bot .mt{align-self:flex-start;padding-left:3px}
+.m.usr .mt{align-self:flex-end;padding-right:3px}
+
+.opt{display:flex;align-items:center;gap:8px;width:100%;
+  background:rgba(255,255,255,0.03);border:1px solid var(--teal-border);
+  color:var(--teal);padding:9px 13px;border-radius:9px;margin-top:7px;
+  font-size:0.8rem;font-family:'Inter',sans-serif;font-weight:500;
+  text-align:left;cursor:pointer;transition:all 0.15s;letter-spacing:0.01em}
+.opt:hover{background:var(--teal-dim);transform:translateX(2px)}
+.opt:active{transform:scale(0.98)}
+.bk{background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.11);color:var(--soft)}
+.bk:hover{background:rgba(255,255,255,0.07);color:#fff;border-color:rgba(255,255,255,0.2);transform:none}
+
+.aml{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  background:linear-gradient(135deg,rgba(245,197,24,0.1),rgba(41,171,226,0.07));
+  border:1px solid rgba(245,197,24,0.42);color:var(--yellow);
+  padding:11px 14px;border-radius:10px;margin-top:8px;
+  font-size:0.82rem;font-family:'Inter',sans-serif;font-weight:600;
+  text-align:center;cursor:pointer;transition:all 0.15s;
+  text-decoration:none;letter-spacing:0.02em}
+.aml:hover{background:linear-gradient(135deg,rgba(245,197,24,0.18),rgba(41,171,226,0.12));
+  transform:translateY(-1px)}
+.aml:active{transform:scale(0.98)}
+
+.ddiv{align-self:center;font-size:0.62rem;font-weight:600;
+  color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.04);
+  border:1px solid var(--divider);border-radius:20px;padding:3px 14px;
+  margin:3px 0;letter-spacing:0.1em;text-transform:uppercase}
+
+.twrap{align-self:flex-start}
+.tbub{background:var(--card);border-radius:2px 14px 14px 14px;
+  border:1px solid var(--divider);border-left:2px solid var(--teal);
+  padding:12px 16px;display:flex;gap:5px;align-items:center}
+.dot{width:6px;height:6px;background:var(--teal);border-radius:50%;animation:bounce 1.3s infinite}
+.dot:nth-child(2){animation-delay:.22s}
+.dot:nth-child(3){animation-delay:.44s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-7px);opacity:1}}
+
+/* ═══ INPUT ═══ */
+.inp-area{background:var(--charcoal);padding:10px 13px;display:flex;
+  align-items:center;gap:9px;flex-shrink:0;
+  padding-bottom:max(10px,env(safe-area-inset-bottom));
+  border-top:1px solid var(--divider)}
+.tinp{flex:1;background:var(--card2);border:1px solid rgba(255,255,255,0.1);
+  border-radius:24px;padding:11px 18px;color:var(--text);
+  font-family:'Inter',sans-serif;font-size:0.88rem;
+  outline:none;transition:border-color 0.2s;caret-color:var(--teal)}
+.tinp:focus{border-color:var(--teal-border)}
+.tinp::placeholder{color:var(--soft)}
+.sbtn{width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,var(--teal-dark),var(--teal));
+  border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:#fff;flex-shrink:0;box-shadow:0 3px 12px rgba(41,171,226,0.38);
+  transition:opacity 0.15s,transform 0.1s,box-shadow 0.15s}
+.sbtn:hover{box-shadow:0 4px 20px rgba(41,171,226,0.55)}
+.sbtn:active{transform:scale(0.91);opacity:0.85}
+
+/* ═══ FOOTER ═══ */
+.fbar{background:var(--charcoal);border-top:1px solid var(--divider);
+  padding:5px 12px max(5px,env(safe-area-inset-bottom));
+  display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0}
+.fbar span{font-size:0.56rem;letter-spacing:0.08em;
+  color:rgba(255,255,255,0.18);text-transform:uppercase;font-weight:500}
+.ft{color:var(--teal)!important;opacity:0.55!important}
+
+/* ═══ MAP EMBED ═══ */
+.map-wrap{border-radius:10px;overflow:hidden;border:1px solid var(--teal-border);
+  margin-top:10px;width:100%;position:relative}
+.map-wrap iframe{display:block;width:100%;height:220px;border:none}
+.map-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  background:linear-gradient(135deg,rgba(41,171,226,0.12),rgba(41,171,226,0.06));
+  border:1px solid var(--teal-border);color:var(--teal);
+  padding:10px 14px;border-radius:10px;margin-top:8px;
+  font-size:0.81rem;font-family:'Inter',sans-serif;font-weight:600;
+  text-decoration:none;text-align:center;transition:all 0.15s;letter-spacing:0.02em}
+.map-btn:hover{background:rgba(41,171,226,0.2);transform:translateY(-1px)}
+
+/* ═══ WHATSAPP BTN ═══ */
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;
+  background:linear-gradient(135deg,rgba(37,211,102,0.15),rgba(37,211,102,0.08));
+  border:1px solid rgba(37,211,102,0.45);color:#25D366;
+  padding:12px 14px;border-radius:10px;margin-top:8px;
+  font-size:0.84rem;font-family:'Inter',sans-serif;font-weight:700;
+  text-decoration:none;text-align:center;transition:all 0.15s;letter-spacing:0.02em;
+  cursor:pointer}
+.wa-btn:hover{background:linear-gradient(135deg,rgba(37,211,102,0.25),rgba(37,211,102,0.15));
+  transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,211,102,0.2)}
+.wa-btn svg{flex-shrink:0}
+
+/* ═══ PRICE TABLE ═══ */
+.ptable{width:100%;border-collapse:collapse;margin-top:10px;font-size:0.73rem}
+.ptable th{background:rgba(41,171,226,0.18);color:var(--teal);font-weight:600;
+  padding:7px 8px;text-align:center;border:1px solid rgba(41,171,226,0.2);
+  font-size:0.68rem;letter-spacing:0.03em;white-space:nowrap}
+.ptable td{padding:6px 8px;border:1px solid rgba(255,255,255,0.06);
+  text-align:center;color:var(--text);white-space:nowrap}
+.ptable tr:nth-child(even) td{background:rgba(255,255,255,0.025)}
+.ptable tr:hover td{background:rgba(41,171,226,0.07)}
+.ptable .rtype{text-align:left;font-weight:600;color:#fff;padding-left:10px}
+.ptable .section-hdr td{background:rgba(41,171,226,0.1);color:var(--teal);
+  font-weight:700;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;
+  text-align:left;padding-left:10px;border-top:1px solid var(--teal-border)}
+.price-note{background:rgba(255,255,255,0.03);border:1px solid var(--divider);
+  border-radius:8px;padding:10px 12px;margin-top:10px;font-size:0.74rem;
+  color:var(--soft);line-height:1.75}
+.price-note strong{color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ══ SIDEBAR (≥900px only) ══ -->
+<aside class="sidebar">
+  <div class="sb-top">
+    <div class="sb-circle">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="9" r="7" fill="#F5C518"/>
+        <circle cx="36" cy="22" r="7" fill="#F5C518"/>
+        <circle cx="50" cy="22" r="7" fill="#F5C518"/>
+        <circle cx="64" cy="22" r="7" fill="#F5C518"/>
+        <rect x="12" y="34" width="8" height="42" rx="1.5" fill="#1C1C1E"/>
+        <rect x="36" y="34" width="8" height="42" rx="1.5" fill="#1C1C1E"/>
+        <rect x="12" y="52" width="32" height="7" rx="1.5" fill="#1C1C1E"/>
+        <rect x="56" y="34" width="8" height="36" rx="1.5" fill="#29ABE2"/>
+        <path d="M64 68 Q64 82 56 84 Q46 86 44 76 L44 72" stroke="#29ABE2" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="sb-name">Joventure Hotel<br/>Kisumu</div>
+    <div class="sb-tag">The Best In Town</div>
+    <div class="sb-rule"></div>
+    <p class="sb-desc">Your premier destination in Kisumu. World-class accommodation, dining, conferencing &amp; catering — all in one place.</p>
+    <div class="sb-list">
+      <div class="sb-item" onclick="go('1')"><span class="sb-num">1</span> Accommodation &amp; Rooms</div>
+      <div class="sb-item" onclick="go('2')"><span class="sb-num">2</span> Food Menu</div>
+      <div class="sb-item" onclick="go('3')"><span class="sb-num">3</span> Drinks Menu</div>
+      <div class="sb-item" onclick="go('4')"><span class="sb-num">4</span> Conference Facilities</div>
+      <div class="sb-item" onclick="go('5')"><span class="sb-num">5</span> Outside Catering</div>
+      <div class="sb-item" onclick="go('6')"><span class="sb-num">6</span> Make a Booking</div>
+    </div>
+  </div>
+  <div class="sb-bottom">
+    <div class="sb-clabel">Contact Us</div>
+    <div class="sb-contact">
+      📞 <a href="tel:+254710714189">+254 710 714 189</a><br/>
+      📧 <a href="mailto:Info@joventurehotel.com">Info@joventurehotel.com</a><br/>
+      🌐 <a href="https://www.joventurehotel.com" target="_blank">joventurehotel.com</a>
+    </div>
+    <div class="sb-online"><div class="sb-pulse"></div> KARIBU AI Assistant · Online 24/7</div>
+  </div>
+</aside>
+
+<!-- ══ CHAT PANEL ══ -->
+<div class="panel">
+
+  <!-- header -->
+  <div class="header">
+    <div class="av">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="9" r="7" fill="#F5C518"/>
+        <circle cx="36" cy="22" r="7" fill="#F5C518"/>
+        <circle cx="50" cy="22" r="7" fill="#F5C518"/>
+        <circle cx="64" cy="22" r="7" fill="#F5C518"/>
+        <rect x="12" y="34" width="8" height="42" rx="1.5" fill="#1C1C1E"/>
+        <rect x="36" y="34" width="8" height="42" rx="1.5" fill="#1C1C1E"/>
+        <rect x="12" y="52" width="32" height="7" rx="1.5" fill="#1C1C1E"/>
+        <rect x="56" y="34" width="8" height="36" rx="1.5" fill="#29ABE2"/>
+        <path d="M64 68 Q64 82 56 84 Q46 86 44 76 L44 72" stroke="#29ABE2" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="hinfo">
+      <div class="hname">Joventure Hotel Kisumu</div>
+      <div class="htag">The Best In Town</div>
+      <div class="hstat">
+        <div class="pdot"></div>
+        <span class="stxt">KARIBU · AI Assistant · Online 24/7</span>
+      </div>
+    </div>
+    <div class="hact">📞 ⋮</div>
+  </div>
+
+  <!-- quick strip -->
+  <div class="strip-wrap">
+    <div class="slabel">Quick Select</div>
+    <div class="strip">
+      <button class="qb" onclick="go('1')">1️⃣ Rooms</button>
+      <button class="qb" onclick="go('2')">2️⃣ Food</button>
+      <button class="qb" onclick="go('3')">3️⃣ Drinks</button>
+      <button class="qb" onclick="go('4')">4️⃣ Conference</button>
+      <button class="qb" onclick="go('5')">5️⃣ Catering</button>
+      <button class="qb" onclick="go('6')">6️⃣ Book</button>
+      <button class="qb" onclick="go('7')">7️⃣ Location</button>
+      <button class="qb" onclick="go('8')">8️⃣ Check-in</button>
+      <button class="qb" onclick="go('9')">9️⃣ Payment</button>
+      <button class="qb" onclick="go('0')">0️⃣ Agent</button>
+      <button class="qb am" onclick="go('amenities')">🖼️ View All Amenities</button>
+    </div>
+  </div>
+
+  <!-- messages -->
+  <div class="msgs" id="msgs">
+    <div class="ddiv">Today</div>
+    <div class="m bot"><div class="bub" id="wb"></div><div class="mt">Just now · ✓✓</div></div>
+  </div>
+
+  <!-- input -->
+  <div class="inp-area">
+    <input class="tinp" id="inp" type="text" placeholder="Type a number 1–9 or your question…" onkeydown="if(event.key==='Enter')send()"/>
+    <button class="sbtn" onclick="send()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="fbar">
+    <span>Powered by</span><span class="ft">KARIBU AI Assistant</span>
+    <span>·</span><span>Joventure Hotel Kisumu</span>
+  </div>
+
+</div><!-- /panel -->
+</div><!-- /shell -->
+
+<script>
+const S='https://www.joventurehotel.com';
+
+const MENU=`<strong>🌟 Karibu Joventure Hotel Kisumu!</strong>
+
+Hello! I'm <strong>KARIBU</strong>, your AI Assistant 😊
+<em>The Best In Town</em> — here to help you 24/7.
+
+Please select a numbered option:
+
+<button class="opt" onclick="go('1')">1️⃣&nbsp; Accommodation &amp; Room Prices</button>
+<button class="opt" onclick="go('2')">2️⃣&nbsp; Food Menu</button>
+<button class="opt" onclick="go('3')">3️⃣&nbsp; Drinks Menu</button>
+<button class="opt" onclick="go('4')">4️⃣&nbsp; Conference &amp; Meeting Facilities</button>
+<button class="opt" onclick="go('5')">5️⃣&nbsp; Outside Catering Services</button>
+<button class="opt" onclick="go('6')">6️⃣&nbsp; Book a Room / Make a Reservation</button>
+<button class="opt" onclick="go('7')">7️⃣&nbsp; Location &amp; Directions</button>
+<button class="opt" onclick="go('8')">8️⃣&nbsp; Check-In &amp; Check-Out Times</button>
+<button class="opt" onclick="go('9')">9️⃣&nbsp; Payment Methods</button>
+<button class="opt" onclick="go('0')">0️⃣&nbsp; Talk to a Human Agent</button>
+<a class="aml" href="${S}" target="_blank">🖼️&nbsp; VIEW ALL AMENITIES — Rooms · Restaurant · Gallery →</a>`;
+
+const R={
+'1':{l:'1 — Accommodation & Room Prices',h:`🏨 <strong>Accommodation &amp; Room Prices</strong>
+<em>All rates in Kenya Shillings (KES) per night</em>
+━━━━━━━━━━━━━━━━━━
+<table class="ptable">
+<thead>
+<tr>
+  <th rowspan="2" style="text-align:left;padding-left:10px">Room Type</th>
+  <th colspan="2">Bed &amp; Breakfast</th>
+  <th colspan="4">Meal Plan</th>
+</tr>
+<tr>
+  <th>Single<br/><em style="color:var(--soft);font-weight:400">(1 pax)</em></th>
+  <th>Double<br/><em style="color:var(--soft);font-weight:400">(2 pax)</em></th>
+  <th>Half Board<br/><em style="color:var(--soft);font-weight:400">Single</em></th>
+  <th>Half Board<br/><em style="color:var(--soft);font-weight:400">Double</em></th>
+  <th>Full Board<br/><em style="color:var(--soft);font-weight:400">Single</em></th>
+  <th>Full Board<br/><em style="color:var(--soft);font-weight:400">Double</em></th>
+</tr>
+</thead>
+<tbody>
+<tr><td class="rtype">🛏️ Standard</td><td>3,000</td><td>4,000</td><td>4,500</td><td>5,700</td><td>5,700</td><td>8,500</td></tr>
+<tr><td class="rtype">🛏️ Deluxe</td><td>4,000</td><td>5,000</td><td>5,500</td><td>8,000</td><td>6,000</td><td>10,200</td></tr>
+<tr><td class="rtype">🛏️ Superior</td><td>5,000</td><td>7,000</td><td>6,000</td><td>9,300</td><td>7,500</td><td>12,300</td></tr>
+<tr><td class="rtype">🏢 Executive</td><td>5,500</td><td>7,500</td><td>7,000</td><td>9,500</td><td>8,000</td><td>12,500</td></tr>
+<tr><td class="rtype">👑 VIP Suite</td><td>8,500</td><td>9,500</td><td>10,000</td><td>12,500</td><td>13,500</td><td>15,000</td></tr>
+</tbody>
+</table>
+
+🏢 <strong>Conference Rates</strong>
+<table class="ptable" style="margin-top:6px">
+<tr><td class="rtype" style="text-align:left;padding-left:10px">Half Day Conference</td><td><strong>KES 2,500</strong></td></tr>
+<tr><td class="rtype" style="text-align:left;padding-left:10px">Full Day Conference</td><td><strong>KES 3,000</strong></td></tr>
+</table>
+
+<div class="price-note">
+📌 <strong>Important Notes:</strong>
+• Check-in: 12:00 noon · Check-out: 10:00am
+• Child under 2 yrs sharing with adult: <strong>Complimentary</strong>
+• Child 2–12 yrs: <strong>50% of adult rate</strong>
+• Youth 13–17 yrs: <strong>75% of room rate</strong>
+• Room service: <strong>KES 200</strong>
+• Late check-out: <strong>50% of room rate</strong>
+• Cancellation within 48hrs of check-in: <strong>25% charge</strong>
+• ID Card or Passport mandatory for registration
+</div>
+━━━━━━━━━━━━━━━━━━
+<a class="aml" href="${S}" target="_blank">🖼️ View Room Photos &amp; Gallery →</a>
+<button class="opt" onclick="go('6')">📅&nbsp; Book a Room Now</button>
+<button class="opt bk" onclick="menu()">↩&nbsp; Back to Main Menu</button>`},
+
+'2':{l:'2 — Food Menu',h:`🍽️ <strong>Joventure Food Menu</strong>
+━━━━━━━━━━━━━━━━━━
+🌅 <strong>BREAKFAST</strong>  <em>7:00am – 10:00am</em>
+Full English Breakfast ···· KES 650
+Kenyan Breakfast (Uji + Mandazi) ···· KES 350
+Fresh Fruit Platter ···· KES 400
+Avocado Toast &amp; Eggs ···· KES 500
+
+☀️ <strong>LUNCH &amp; DINNER</strong>
+Grilled Tilapia (Lake Victoria) ···· KES 850
+Nyama Choma 500g ···· KES 1,200
+Chicken Pilau ···· KES 700
+Vegetable Biryani ···· KES 600
+Beef Stew + Ugali ···· KES 550
+Grilled Chicken + Chips ···· KES 750
+Pasta Arrabiata ···· KES 580
+
+🍰 <strong>DESSERTS</strong>
+Mango Sorbet ···· KES 280
+Chocolate Lava Cake ···· KES 380
+━━━━━━━━━━━━━━━━━━
+<button class="opt" onclick="go('3')">3️⃣&nbsp; View Drinks Menu</button>
+<button class="opt bk" onclick="menu()">↩&nbsp; Back to Main Menu</button>`},
+
+'3':{l:'3 — Drinks Menu',h:`🍹 <strong>Drinks Menu</strong>
+━━━━━━━━━━━━━━━━━━
+🥤 <strong>FRESH JUICES &amp; SOFT DRINKS</strong>
+Fresh Passion Juice ···· KES 200
+Watermelon Juice ···· KES 200
+Mango Smoothie ···· KES 280
+Soda (Coca-Cola, Sprite, Fanta) ···· KES 100
+Mineral Water 500ml ···· KES 60
+
+☕ <strong>HOT BEVERAGES</strong>
+Kenyan Tea ···· KES 120
+Cappuccino ···· KES 280
+Espresso ···· KES 250
+Hot Chocolate ···· KES 300
+
+🍺 <strong>ALCOHOLIC BEVERAGES</strong>
+Tusker / White Cap / Kilimanjaro ···· KES 350
+House Wine (Glass) ···· KES 500
+Spirits &amp; Cocktails ···· from KES 600
+━━━━━━━━━━━━━━━━━━
+<button class="opt" onclick="go('2')">2️⃣&nbsp; View Food Menu</button>
+<button class="opt bk" onclick="menu()">↩&nbsp; Back to Main Menu</button>`},
+
+'4':{l:'4 — Conference & Meeting Facilities',h:`📋 <strong>Conference &amp; Meeting Facilities</strong>
+━━━━━━━━━━━━━━━━━━
+🏢 <strong>Main Conference Hall</strong>  <em>Up to 150 guests</em>
+Half Day ···· KES 15,000  |  Full Day ···· KES 25,000
+✓ Projector &amp; Screen  ✓ PA System  ✓ Free WiFi  ✓ AC  ✓ Whiteboard
+
+🏢 <strong>Executive Boardroom</strong>  <em>Up to 20 guests</em>
+Half Day ···· KES 5,000  |  Full Day ···· KES 9,000
+✓ Flat Screen TV  ✓ Video Conferencing  ✓ Stationery
+
+☕ <strong>All packages include:</strong>
+• 2× Tea &amp; Coffee Breaks  • Lunch Buffet
+• Still Water Throughout  • Free Parking
+
+We also organise: Workshops · Seminars · Gala Dinners · Team Building
+━━━━━━━━━━━━━━━━━━
+<a class="aml" href="${S}" target="_blank">🖼️ View Conference Hall Photos →</a>
+<button class="opt bk" onclick="menu()">↩&nbsp; Back to Main Menu</button>`},
+
+'5':{l:'5 — Outside Catering',h:`🍱 <strong>Outside Catering Services</strong>
+━━━━━━━━━━━━━━━━━━
+We cater for all occasions:
+🎂 Weddings &amp; Introduction Ceremonies
+🎉 Birthday &amp; Anniversary Parties
+🏢 Corporate Events &amp; Office Parties
+🎓 Graduation Parties
+🕌 Community &amp; Religious Gatherings
+
+✅ <strong>Every package includes:</strong>
+• Professional Chefs &amp; Service Staff
+• All Crockery, Cutlery &amp; Equipment
+• Full Setup &amp; Cleanup
+• Custom Menu Tailored to Your Event
+• Halal &amp; Vegetarian Options Available
+
+💰 <strong>From KES 800 per person</strong>
+<em>Minimum 50 guests · Custom quotes for larger events</em>
+━━━━━━━━━━━━━━━━━━
+To get a personalised quote, reply with your:
+📅 Event date  ·  👥 Guest count  ·  🍽️ Menu preference
+<button class="opt bk" onclick="menu()">↩&nbsp; Back to Main Menu</button>`},
+
+'6':{l:'6 — Book a Room',h:`📅 <strong>Book Your Stay at Joventure</strong>
+━━━━━━━━━━━━━━━━━━
+Please share the following and our team will confirm within minutes:
+
+<em>1️⃣  Check-in date</em>  (e.g. 20 June 2025)
+<em>2️⃣  Check-out date</em>
+<em>3️⃣  Room type</em>  Standard · Deluxe · Suite
+<em>4️⃣  Number of guests</em>
+<em>5️⃣  Your full name</em>
+<em>6️⃣  Your phone number</em>
+
+We'll send your confirmation &amp; M-Pesa details instantly! 🏨✨
+━━━━━━━━━━━━━━━━━━
+<a class="aml" href="${S}" target="_blank">🖼️ View Rooms Before Booking →</a>
+<button class="opt" onclick="go('9')">9️⃣&nbsp; View Payment Methods</button>
+<button class="opt bk" onclick="menu()">↩&nbsp; Back to Main Menu</button>`},
+
+'7':{l:'7 — Location & Directions',h:`📍 <strong>Find Joventure Hotel Kisumu</strong>
+━━━━━━━━━━━━━━━━━━
+📌 Joventure Hotel, Kisumu, Kenya
+🌐 joventurehotel.com
+📧 Info@joventurehotel.com
+📞 +254 710 714 189
+
+<div class="map-wrap">
+  <iframe
+    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.748!2d34.7617!3d-0.0917!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182aa412f1f72c5d%3A0x6a1e0a3b7f8c9e2d!2sJoventure%20Hotel%20Kisumu!5e0!3m2!1sen!2ske!4v1234567890"
+    allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+  </iframe>
+</div>
+<a class="map-btn" href="https://www.google.com/maps/dir/?api=1&destination=Joventure+Hotel+Kisumu&destination_place_id=ChIJ7f9PAQ2xLxgR1yMZ2fFuLG4" target="_blank">
+  🗺️&nbsp; GET DIRECTIONS FROM MY LOCATION →
+</a>
+
+🚗 <strong>Getting Here</strong>
+• From Kisumu Airport: ~15 min by taxi
+• From Kisumu CBD: ~5 min by boda / taxi
+• Free on-site parking available
+
+⏰ Reception open <strong>24 hours, 7 days a week</strong>
+━━━━━━━━━━━━━━━━━━
+Need an airport transfer? Just ask! 🚖
+<button class="opt" onclick="go('6')">6️⃣&nbsp; Book a Room</button>
+<button class="opt bk" onclick="menu()">↩&nbsp; Back to Main Menu</button>`},
+
+'8':{l:'8 — Check-In & Check-Out',h:`⏰ <strong>Check-In &amp; Check-Out</strong>
+━━━━━━━━━━━━━━━━━━
+✅ <strong>Check-In:</strong>  From 12:00 PM (Noon)
+🚪 <strong>Check-Out:</strong>  By 10:00 AM
+
+⚡ <strong>Early Check-In</strong> from 8:00 AM
+<em>Subject to availability · KES 500 supplement</em>
+
+🌙 <strong>Late Check-Out</strong> until 2:00 PM
+<em>Subject to availability · KES 500 supplement</em>
+
+Please have your <strong>booking confirmation + ID / Passport</strong> on arrival.
+━━━━━━━━━━━━━━━━━━
+<button class="opt" onclick="go('6')">6️⃣&nbsp; Make a Booking</button>
+<button class="opt bk" onclick="menu()">↩&nbsp; Back to Main Menu</button>`},
+
+'9':{l:'9 — Payment Methods',h:`💳 <strong>Payment Methods</strong>
+━━━━━━━━━━━━━━━━━━
+📱 <strong>M-Pesa</strong>  <em>(Preferred)</em>
+Paybill / Send Money details shared on booking confirmation
+
+💳 <strong>Debit &amp; Credit Card</strong>
+Visa &amp; Mastercard accepted at reception
+
+💵 <strong>Cash</strong>
+Kenya Shillings (KES) or USD accepted
+
+🏦 <strong>Bank Transfer</strong>
+Available for corporate &amp; large bookings — invoice provided
+━━━━━━━━━━━━━━━━━━
+📌 <em>50% deposit required for conference &amp; catering bookings</em>
+📌 <em>Full room payment due at check-in</em>
+<button class="opt" onclick="go('6')">6️⃣&nbsp; Proceed to Book</button>
+<button class="opt bk" onclick="menu()">↩&nbsp; Back to Main Menu</button>`},
+
+'0':{l:'0 — Talk to a Human Agent',h:`👤 <strong>Connecting You to Our Team</strong>
+━━━━━━━━━━━━━━━━━━
+A member of our team will be with you shortly!
+
+⏰ <em>Business hours (8am – 8pm):</em> within <strong>5 minutes</strong>
+🌙 <em>After hours:</em> within <strong>1 hour</strong>
+
+Reach us directly right now:
+<a class="wa-btn" href="https://wa.me/254710714189?text=Hello%20Joventure%20Hotel%2C%20I%20would%20like%20to%20speak%20with%20a%20team%20member." target="_blank">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="#25D366" xmlns="http://www.w3.org/2000/svg">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+  CHAT ON WHATSAPP NOW
+</a>
+<a class="map-btn" href="tel:+254710714189">
+  📞&nbsp; CALL US: +254 710 714 189
+</a>
+📧 Info@joventurehotel.com
+━━━━━━━━━━━━━━━━━━
+<button class="opt bk" onclick="menu()">↩&nbsp; Back to Main Menu</button>`},
+
+'amenities':{l:'🖼️ View All Amenities',h:`🖼️ <strong>Joventure Hotel — Gallery &amp; Amenities</strong>
+━━━━━━━━━━━━━━━━━━
+In hospitality, <strong>seeing is believing</strong> — and booking! 😊
+
+Our website showcases:
+🛏️ All room types with high-quality photos
+🍽️ Restaurant, bar &amp; dining areas
+📋 Conference hall &amp; boardroom
+🏊 Hotel amenities &amp; common areas
+👨‍🍳 Our professional team &amp; kitchen
+🌿 Outdoor spaces &amp; event areas
+━━━━━━━━━━━━━━━━━━
+<a class="aml" href="${S}" target="_blank">🌐&nbsp; OPEN JOVENTURE HOTEL WEBSITE →</a>
+<a class="map-btn" href="https://www.google.com/maps/dir/?api=1&destination=Joventure+Hotel+Kisumu&destination_place_id=ChIJ7f9PAQ2xLxgR1yMZ2fFuLG4" target="_blank">🗺️&nbsp; GET DIRECTIONS TO JOVENTURE HOTEL →</a>
+<button class="opt" onclick="go('6')">📅&nbsp; Ready to Book? Tap Here</button>
+<button class="opt bk" onclick="menu()">↩&nbsp; Back to Main Menu</button>`}
+};
+
+function ts(){const d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')}
+
+function bot(h){const c=document.getElementById('msgs'),w=document.createElement('div');
+  w.className='m bot';w.innerHTML=`<div class="bub">${h}</div><div class="mt">${ts()} · ✓✓</div>`;
+  c.appendChild(w);c.scrollTop=c.scrollHeight}
+
+function usr(t){const c=document.getElementById('msgs'),w=document.createElement('div');
+  w.className='m usr';w.innerHTML=`<div class="bub">${t}</div><div class="mt">${ts()} · ✓✓</div>`;
+  c.appendChild(w);c.scrollTop=c.scrollHeight}
+
+function showT(){const c=document.getElementById('msgs'),w=document.createElement('div');
+  w.className='m bot twrap';w.id='typ';
+  w.innerHTML='<div class="tbub"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  c.appendChild(w);c.scrollTop=c.scrollHeight}
+
+function killT(){const t=document.getElementById('typ');if(t)t.remove()}
+
+function menu(){usr('↩ Main Menu');showT();setTimeout(()=>{killT();bot(MENU)},650)}
+
+function go(k){const r=R[k];if(!r){menu();return}
+  usr(r.l);showT();setTimeout(()=>{killT();bot(r.h)},750+Math.random()*350)}
+
+function send(){const i=document.getElementById('inp');const v=i.value.trim();if(!v)return;
+  i.value='';
+  if(['0','1','2','3','4','5','6','7','8','9'].includes(v)){go(v);return}
+  if(/amenit|gallery|view|photos?|images?|website/i.test(v)){go('amenities');return}
+  if(/hi|hello|hey|hujambo|karibu|good\s?morning|good\s?evening|sasa|habari/i.test(v)){
+    usr(v);showT();setTimeout(()=>{killT();bot(MENU)},650);return}
+  usr(v);showT();
+  setTimeout(()=>{killT();bot(`😊 Please choose a numbered option:\n\n<button class="opt" onclick="menu()">📋&nbsp; Show Main Menu</button>`)},650)}
+
+document.getElementById('wb').innerHTML=MENU;
+</script>
+</body>
+</html>
